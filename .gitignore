@@ -1,0 +1,37 @@
+# Binaries
+/runix
+/bin/
+/dist/
+
+# Test binary
+*.test
+
+# Coverage
+*.out
+coverage.txt
+
+# Dependency directories
+/vendor/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+*.exe
+
+# Runix data
+state.json
+logs/
+runix.yaml
+
+# Nix
+result
+result-*

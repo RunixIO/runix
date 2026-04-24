@@ -1,0 +1,100 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: runix
+    main: ./cmd/runix
+    binary: runix
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X github.com/runixio/runix/internal/version.Version={{.Version}}
+      - -X github.com/runixio/runix/internal/version.BuildTime={{.Date}}
+
+archives:
+  - id: default
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- .Os }}_
+      {{- .Arch }}
+    format: tar.gz
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+snapshot:
+  version_template: "{{ .Tag }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "merge conflict"
+  groups:
+    - title: Features
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 0
+    - title: Bug Fixes
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 1
+    - title: Others
+      order: 999
+
+release:
+  github:
+    owner: runixio
+    name: runix
+  draft: false
+  prerelease: auto
+  mode: replace
+
+brews:
+  - name: runix
+    repository:
+      owner: runixio
+      name: homebrew-tap
+    directory: Formula
+    homepage: https://github.com/runixio/runix
+    description: "A modern process manager and application supervisor"
+    test: |
+      system "#{bin}/runix version"
+    install: |
+      bin.install "runix"
+
+nfpms:
+  - id: default
+    package_name: runix
+    homepage: https://github.com/runixio/runix
+    description: "A modern process manager and application supervisor"
+    maintainer: Runix Contributors
+    license: MIT
+    formats:
+      - deb
+      - rpm
+      - apk
+    contents:
+      - src: ./LICENSE
+        dst: /usr/share/doc/runix/LICENSE
