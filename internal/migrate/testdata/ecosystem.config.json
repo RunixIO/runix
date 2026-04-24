@@ -1,0 +1,47 @@
+{
+	"apps": [
+		{
+			"name": "web",
+			"script": "server.js",
+			"instances": 2,
+			"exec_mode": "cluster_mode",
+			"env": {
+				"NODE_ENV": "development",
+				"PORT": "3000"
+			},
+			"env_production": {
+				"NODE_ENV": "production",
+				"PORT": "8080"
+			},
+			"watch": true,
+			"ignore_watch": ["node_modules", "data"],
+			"autorestart": true,
+			"max_memory_restart": "500M"
+		},
+		{
+			"name": "worker",
+			"script": "worker.js",
+			"args": "--queue high --verbose",
+			"cwd": "/app/worker",
+			"interpreter": "python3",
+			"max_restarts": 10,
+			"kill_timeout": 5000,
+			"cron_restart": "0 3 * * *"
+		},
+		{
+			"name": "api",
+			"script": "app.js",
+			"instances": 4,
+			"exec_mode": "cluster_mode",
+			"interpreter": "bun",
+			"exp_backoff_restart_delay": 100,
+			"uid": "appuser",
+			"gid": "appgroup",
+			"out_file": "/var/log/api/out.log",
+			"error_file": "/var/log/api/error.log",
+			"log_date_format": "YYYY-MM-DD HH:mm Z",
+			"min_uptime": "5s",
+			"stop_exit_codes": [0, 2]
+		}
+	]
+}

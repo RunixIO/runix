@@ -1,0 +1,36 @@
+[
+  {
+    "name": "my-app",
+    "pm_exec_path": "/app/server.js",
+    "pm_cwd": "/app",
+    "script": "server.js",
+    "cwd": "/app",
+    "exec_interpreter": "node",
+    "exec_mode": "fork_mode",
+    "instances": 1,
+    "pm_watch": false,
+    "autorestart": true,
+    "env": {
+      "NODE_ENV": "production",
+      "PORT": "3000"
+    },
+    "max_memory_restart": "1G",
+    "max_restarts": 16,
+    "kill_timeout": 1600,
+    "namespace": "default",
+    "restart_time": 0,
+    "unstable_restarts": 0
+  },
+  {
+    "name": "worker",
+    "pm_exec_path": "/app/worker.py",
+    "pm_cwd": "/app",
+    "script": "worker.py",
+    "exec_interpreter": "python3",
+    "autorestart": true,
+    "env": {
+      "REDIS_URL": "redis://localhost:6379"
+    },
+    "pm_cron_restart": "*/30 * * * *"
+  }
+]
