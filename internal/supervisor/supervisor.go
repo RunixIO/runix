@@ -691,7 +691,21 @@ func (s *Supervisor) LogPathStderr(processID string) string {
 
 // AppDir returns the per-app data directory path.
 func (s *Supervisor) AppDir(name string) string {
-	return filepath.Join(s.logDir, "apps", name)
+	return filepath.Join(s.logDir, "apps", sanitizeName(name))
+}
+
+// sanitizeName strips path traversal sequences from a process name used in file paths.
+func sanitizeName(name string) string {
+	return strings.Map(func(r rune) rune {
+		switch {
+		case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r >= '0' && r <= '9':
+			return r
+		case r == '-', r == '_', r == '.':
+			return r
+		default:
+			return '_'
+		}
+	}, name)
 }
 
 // Save persists the current process table to disk as dump.json with full metadata.

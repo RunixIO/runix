@@ -56,7 +56,9 @@ func (e *Executor) Run(ctx context.Context, hook *types.HookConfig, event string
 	logger.Info().Msg("executing lifecycle hook")
 	start := time.Now()
 
-	cmd := exec.CommandContext(ctx, "sh", "-c", hook.Command)
+	// Intentional: hooks are user-defined shell commands from runix.yaml.
+	// sanitizeCommand strips null bytes; shell features (pipes, &&, etc.) are expected.
+	cmd := exec.CommandContext(ctx, "sh", "-c", sanitizeCommand(hook.Command)) //codeql[go/command-injection]
 	setProcessGroup(cmd)
 	cmd.Cancel = func() error {
 		return killProcessGroup(cmd.Process)
@@ -238,3 +240,13 @@ func HookEnabled(hooks *types.ProcessHooks, event string) bool {
 
 // Silence unused import warning.
 var _ = zerolog.DebugLevel
+
+// sanitizeCommand strips null bytes from a hook command sourced from config.
+func sanitizeCommand(cmd string) string {
+	for i := range len(cmd) {
+		if cmd[i] == 0 {
+			return cmd[:i]
+		}
+	}
+	return cmd
+}

@@ -756,6 +756,14 @@ func (p *ManagedProcess) waitUntilReady(ctx context.Context, timeout time.Durati
 
 // buildArgs constructs the command-line arguments from the process config.
 func buildArgs(cfg types.ProcessConfig) []string {
+	args := buildArgsRaw(cfg)
+	for i := range args {
+		args[i] = sanitizeArg(args[i])
+	}
+	return args
+}
+
+func buildArgsRaw(cfg types.ProcessConfig) []string {
 	if cfg.UseBundle {
 		interpreter := "ruby"
 		if cfg.Interpreter != "" {
@@ -812,4 +820,14 @@ func buildEnv(overlay map[string]string) []string {
 	}
 
 	return result
+}
+
+// sanitizeArg strips null bytes from a command argument sourced from config.
+func sanitizeArg(s string) string {
+	for i := range len(s) {
+		if s[i] == 0 {
+			return s[:i]
+		}
+	}
+	return s
 }

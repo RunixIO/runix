@@ -245,17 +245,18 @@ func sanitizeRedirectPath(raw string) string {
 	if raw == "" {
 		return "/"
 	}
-	if strings.HasPrefix(raw, "//") {
+	if !strings.HasPrefix(raw, "/") {
 		return "/"
 	}
-	if !strings.HasPrefix(raw, "/") {
+	// Block protocol-relative URLs (//evil.com) and backslash variants (/\evil.com).
+	if len(raw) > 1 && (raw[1] == '/' || raw[1] == '\\') {
 		return "/"
 	}
 	u, err := url.Parse(raw)
 	if err != nil {
 		return "/"
 	}
-	if u.IsAbs() || u.Host != "" {
+	if u.IsAbs() || u.Host != "" || u.User != nil {
 		return "/"
 	}
 	cleanPath := path.Clean("/" + strings.TrimPrefix(u.Path, "/"))
