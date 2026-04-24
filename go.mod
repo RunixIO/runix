@@ -10,7 +10,7 @@ require (
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
-	github.com/mark3labs/mcp-go v0.47.1
+	github.com/mark3labs/mcp-go v0.49.0
 	github.com/mattn/go-isatty v0.0.21
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/rs/zerolog v1.35.0
