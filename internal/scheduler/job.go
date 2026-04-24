@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"strings"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/robfig/cron/v3"
@@ -68,7 +67,7 @@ func (j *Job) runDirect() {
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, "sh", "-c", j.Config.Command)
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	setProcessGroup(cmd)
 	if j.Config.Cwd != "" {
 		cmd.Dir = j.Config.Cwd
 	}

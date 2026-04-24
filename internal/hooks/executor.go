@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/rs/zerolog"
@@ -58,7 +57,7 @@ func (e *Executor) Run(ctx context.Context, hook *types.HookConfig, event string
 	start := time.Now()
 
 	cmd := exec.CommandContext(ctx, "sh", "-c", hook.Command)
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	setProcessGroup(cmd)
 	cmd.Dir = cfg.Cwd
 	if cmd.Dir == "" {
 		cmd.Dir, _ = os.Getwd()

@@ -6,7 +6,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"syscall"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -58,7 +57,7 @@ func StartDaemon() error {
 	cmd := exec.Command(bin, "daemon", "run")
 	cmd.Stdout = nil // daemon manages its own logging
 	cmd.Stderr = nil // daemon manages its own logging
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	setProcessGroup(cmd)
 
 	// Pass the caller's config file path to the daemon so it loads the same config.
 	if cfgPath := os.Getenv("RUNIX_CONFIG"); cfgPath != "" {

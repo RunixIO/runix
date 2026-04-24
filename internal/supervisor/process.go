@@ -157,7 +157,7 @@ func (p *ManagedProcess) ApplyDefaults(defaults types.DefaultsConfig) {
 	if p.stopSignal == 0 {
 		sig := p.Config.StopSignal
 		if sig == "" {
-			p.stopSignal = syscall.SIGTERM
+			p.stopSignal = defaultStopSignal()
 		} else {
 			p.stopSignal = parseSignal(sig)
 		}
@@ -259,7 +259,7 @@ func (p *ManagedProcess) Start(ctx context.Context) error {
 	}
 
 	// Process group: create new group so we can signal the whole tree.
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	setProcessGroup(cmd)
 
 	// Wire stdout/stderr.
 	if p.stdoutWriter != nil {
@@ -360,7 +360,7 @@ func (p *ManagedProcess) Stop(timeout time.Duration) error {
 		Msg("sending stop signal to process group")
 
 	// Signal the entire process group.
-	_ = syscall.Kill(-pid, p.stopSignal)
+	signalProcessGroup(pid, p.stopSignal)
 
 	// Wait for the monitor goroutine to call handleExit and close exited.
 	select {
@@ -399,7 +399,7 @@ func (p *ManagedProcess) ForceStop() error {
 		Int("pid", pid).
 		Msg("force-killing process group")
 
-	_ = syscall.Kill(-pid, syscall.SIGKILL)
+	signalProcessGroup(pid, killSignal())
 
 	// Wait for exit, with a shorter timeout since SIGKILL is immediate.
 	select {
@@ -812,24 +812,4 @@ func buildEnv(overlay map[string]string) []string {
 	}
 
 	return result
-}
-
-// parseSignal converts a signal name string to a syscall.Signal.
-func parseSignal(s string) syscall.Signal {
-	switch strings.ToUpper(s) {
-	case "SIGTERM", "TERM":
-		return syscall.SIGTERM
-	case "SIGINT", "INT":
-		return syscall.SIGINT
-	case "SIGQUIT", "QUIT":
-		return syscall.SIGQUIT
-	case "SIGUSR1", "USR1":
-		return syscall.SIGUSR1
-	case "SIGUSR2", "USR2":
-		return syscall.SIGUSR2
-	case "SIGKILL", "KILL":
-		return syscall.SIGKILL
-	default:
-		return syscall.SIGTERM
-	}
 }
