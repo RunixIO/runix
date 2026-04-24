@@ -34,7 +34,7 @@ func TestSupervisorStartStopList(t *testing.T) {
 			MaxRestarts:   0,
 		},
 	})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	// Start 3 processes.
 	for i := 0; i < 3; i++ {
@@ -96,7 +96,7 @@ func TestSupervisorRestartPolicy(t *testing.T) {
 			BackoffMax:    500 * time.Millisecond,
 		},
 	})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	// Start a process that exits immediately.
 	_, err := sup.AddProcess(context.Background(), types.ProcessConfig{
@@ -162,7 +162,7 @@ func TestSupervisorSaveAndResurrect(t *testing.T) {
 		t.Fatalf("save failed: %v", err)
 	}
 
-	sup1.Shutdown()
+	_ = sup1.Shutdown()
 
 	// Verify state file exists.
 	if _, err := os.Stat(dumpFile); os.IsNotExist(err) {
@@ -177,7 +177,7 @@ func TestSupervisorSaveAndResurrect(t *testing.T) {
 			MaxRestarts:   0,
 		},
 	})
-	defer sup2.Shutdown()
+	defer func() { _ = sup2.Shutdown() }()
 
 	if err := sup2.Resurrect(); err != nil {
 		t.Fatalf("resurrect failed: %v", err)
@@ -214,7 +214,9 @@ func TestDaemonIPCStartStop(t *testing.T) {
 		},
 	})
 	pidDir := filepath.Join(t.TempDir(), "pid")
-	os.MkdirAll(pidDir, 0o755)
+	if err := os.MkdirAll(pidDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
 	srv := daemon.NewServer(sup, socketPath, pidDir, nil, nil, "")
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -291,7 +293,9 @@ func TestDaemonIPCStartStop(t *testing.T) {
 
 	// Verify the process is no longer running.
 	resp, _ = client.Send(context.Background(), daemon.Request{Action: daemon.ActionList})
-	json.Unmarshal(resp.Data, &procs)
+	if err := json.Unmarshal(resp.Data, &procs); err != nil {
+		t.Fatal(err)
+	}
 	for _, p := range procs {
 		if p.Name == "ipc-test" && p.State == types.StateRunning {
 			t.Error("ipc-test should not be running after stop")
@@ -323,7 +327,7 @@ func TestProcessLogCapture(t *testing.T) {
 			MaxRestarts:   0,
 		},
 	})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	// Start a process that writes output and exits.
 	proc, err := sup.AddProcess(context.Background(), types.ProcessConfig{
@@ -371,7 +375,7 @@ func TestWatchRestartsOnFileChange(t *testing.T) {
 			MaxRestarts:   0,
 		},
 	})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	// Start a long-running process.
 	proc, err := sup.AddProcess(context.Background(), types.ProcessConfig{
@@ -476,16 +480,18 @@ func TestWebAPIE2E(t *testing.T) {
 			MaxRestarts:   0,
 		},
 	})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	// Start a process directly.
-	sup.AddProcess(context.Background(), types.ProcessConfig{
+	if _, err := sup.AddProcess(context.Background(), types.ProcessConfig{
 		Name:          "web-test",
 		Entrypoint:    "sleep",
 		Args:          []string{"60"},
 		Runtime:       "unknown",
 		RestartPolicy: types.RestartNever,
-	})
+	}); err != nil {
+		t.Fatal(err)
+	}
 
 	// Use httptest instead of real listener — covered by web/api_test.go.
 	// This test validates the full supervisor → process flow.

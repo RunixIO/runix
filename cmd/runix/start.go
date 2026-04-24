@@ -123,12 +123,12 @@ Supports Go binaries/scripts, Python scripts, Node.js/TypeScript apps, Bun apps,
 			}
 
 			if dryRun {
-				fmt.Fprintf(os.Stdout, "[Runix] Dry run: would start %q\n", name)
-				fmt.Fprintf(os.Stdout, "  runtime:    %s\n", resolvedRuntime)
-				fmt.Fprintf(os.Stdout, "  entrypoint: %s\n", finalEntrypoint)
-				fmt.Fprintf(os.Stdout, "  args:       %v\n", finalArgs)
-				fmt.Fprintf(os.Stdout, "  cwd:        %s\n", cwd)
-				fmt.Fprintf(os.Stdout, "  instances:  %d\n", instances)
+				_, _ = fmt.Fprintf(os.Stdout, "[Runix] Dry run: would start %q\n", name)
+				_, _ = fmt.Fprintf(os.Stdout, "  runtime:    %s\n", resolvedRuntime)
+				_, _ = fmt.Fprintf(os.Stdout, "  entrypoint: %s\n", finalEntrypoint)
+				_, _ = fmt.Fprintf(os.Stdout, "  args:       %v\n", finalArgs)
+				_, _ = fmt.Fprintf(os.Stdout, "  cwd:        %s\n", cwd)
+				_, _ = fmt.Fprintf(os.Stdout, "  instances:  %d\n", instances)
 				return nil
 			}
 
@@ -177,13 +177,13 @@ Supports Go binaries/scripts, Python scripts, Node.js/TypeScript apps, Bun apps,
 				}
 				resp, err := sendIPC(daemon.ActionStart, payload)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
+					_, _ = fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
 				} else if !resp.Success {
 					return fmt.Errorf("daemon error: %s", resp.Error)
 				} else {
 					var info types.ProcessInfo
 					if err := json.Unmarshal(resp.Data, &info); err == nil {
-						fmt.Fprintf(os.Stdout, "[Runix] Process %q started (id: %d, pid: %d)\n", info.Name, info.NumericID, info.PID)
+						_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process %q started (id: %d, pid: %d)\n", info.Name, info.NumericID, info.PID)
 					}
 					continue
 				}
@@ -200,7 +200,7 @@ Supports Go binaries/scripts, Python scripts, Node.js/TypeScript apps, Bun apps,
 				}
 
 				info := proc.Info()
-				fmt.Fprintf(os.Stdout, "[Runix] Process %q started (id: %d, pid: %d)\n", info.Name, info.NumericID, info.PID)
+				_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process %q started (id: %d, pid: %d)\n", info.Name, info.NumericID, info.PID)
 			}
 
 			showSpeedList()
@@ -247,14 +247,14 @@ func startAllFromConfig(onlyFlag string, configPath string) error {
 	}
 
 	for _, info := range result.Started {
-		fmt.Fprintf(os.Stdout, "[Runix] Process %q started (id: %d, pid: %d)\n", info.Name, info.NumericID, info.PID)
+		_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process %q started (id: %d, pid: %d)\n", info.Name, info.NumericID, info.PID)
 	}
 	for _, e := range result.Errors {
-		fmt.Fprintf(os.Stderr, "[Runix] Error: %s\n", e)
+		_, _ = fmt.Fprintf(os.Stderr, "[Runix] Error: %s\n", e)
 	}
 
 	if len(result.Started) == 0 && len(result.Errors) == 0 {
-		fmt.Fprintln(os.Stdout, "[Runix] No processes to start (check runix.yaml)")
+		_, _ = fmt.Fprintln(os.Stdout, "[Runix] No processes to start (check runix.yaml)")
 	}
 
 	showSpeedList()

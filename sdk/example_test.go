@@ -36,7 +36,7 @@ func newTestManager(t *testing.T) *sdk.Manager {
 	if err != nil {
 		t.Fatalf("failed to create manager: %v", err)
 	}
-	t.Cleanup(func() { mgr.Close() })
+	t.Cleanup(func() { _ = mgr.Close() })
 	return mgr
 }
 
@@ -46,7 +46,7 @@ func TestNewManager(t *testing.T) {
 	if err != nil {
 		t.Fatalf("New() error: %v", err)
 	}
-	defer mgr.Close()
+	defer func() { _ = mgr.Close() }()
 
 	if mgr == nil {
 		t.Fatal("New() returned nil manager")
@@ -58,7 +58,7 @@ func TestNewManager_DefaultLogDir(t *testing.T) {
 	if err != nil {
 		t.Fatalf("New() with empty config error: %v", err)
 	}
-	defer mgr.Close()
+	defer func() { _ = mgr.Close() }()
 }
 
 func TestAddProcess_Sleep(t *testing.T) {
@@ -211,14 +211,14 @@ func TestSaveResurrect(t *testing.T) {
 		t.Fatalf("Save() error: %v", err)
 	}
 
-	mgr1.Close()
+	_ = mgr1.Close()
 
 	// Create a new manager and resurrect.
 	mgr2, err := sdk.New(sdk.Config{LogDir: dir})
 	if err != nil {
 		t.Fatalf("New() error: %v", err)
 	}
-	defer mgr2.Close()
+	defer func() { _ = mgr2.Close() }()
 
 	if err := mgr2.Resurrect(); err != nil {
 		t.Fatalf("Resurrect() error: %v", err)
@@ -273,7 +273,7 @@ func TestLogs(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Logs() error: %v", err)
 	}
-	defer r.Close()
+	defer func() { _ = r.Close() }()
 
 	data, _ := io.ReadAll(r)
 	if len(data) == 0 {
@@ -577,7 +577,7 @@ func Example_newManager() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer mgr.Close()
+	defer func() { _ = mgr.Close() }()
 
 	ctx := context.Background()
 	id, err := mgr.AddProcess(ctx, sdk.ProcessConfig{
@@ -608,19 +608,19 @@ func Example_saveResurrect() {
 	mgr, _ := sdk.New(sdk.Config{LogDir: dir})
 	ctx := context.Background()
 
-	mgr.AddProcess(ctx, sdk.ProcessConfig{
+	_, _ = mgr.AddProcess(ctx, sdk.ProcessConfig{
 		Name:   "api",
 		Binary: "sleep",
 		Args:   []string{"300"},
 	})
-	mgr.Save()
-	mgr.Close()
+	_ = mgr.Save()
+	_ = mgr.Close()
 
 	// Session 2: restore from saved state.
 	mgr2, _ := sdk.New(sdk.Config{LogDir: dir})
-	defer mgr2.Close()
+	defer func() { _ = mgr2.Close() }()
 
-	mgr2.Resurrect()
+	_ = mgr2.Resurrect()
 
 	for _, p := range mgr2.List() {
 		fmt.Printf("Restored: %s (PID %d)\n", p.Name, p.PID)

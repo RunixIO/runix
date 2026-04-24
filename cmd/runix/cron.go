@@ -28,7 +28,7 @@ func newCronCmd() *cobra.Command {
 			if daemonIsRunning() {
 				resp, err := sendIPC(daemon.ActionCronList, nil)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
+					_, _ = fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
 				} else if resp.Success {
 					var jobs []scheduler.JobInfo
 					if err := json.Unmarshal(resp.Data, &jobs); err == nil {
@@ -37,7 +37,7 @@ func newCronCmd() *cobra.Command {
 				}
 			}
 
-			fmt.Fprintln(os.Stdout, "No cron jobs configured (daemon not running)")
+			_, _ = fmt.Fprintln(os.Stdout, "No cron jobs configured (daemon not running)")
 			return nil
 		},
 	}
@@ -58,11 +58,11 @@ func newCronCmd() *cobra.Command {
 					Name: name,
 				})
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed: %v\n", err)
+					_, _ = fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed: %v\n", err)
 				} else if !resp.Success {
 					return fmt.Errorf("daemon error: %s", resp.Error)
 				} else {
-					fmt.Fprintf(os.Stdout, "[Runix] Cron job %q started\n", name)
+					_, _ = fmt.Fprintf(os.Stdout, "[Runix] Cron job %q started\n", name)
 					return nil
 				}
 			}
@@ -85,11 +85,11 @@ func newCronCmd() *cobra.Command {
 					Name: name,
 				})
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed: %v\n", err)
+					_, _ = fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed: %v\n", err)
 				} else if !resp.Success {
 					return fmt.Errorf("daemon error: %s", resp.Error)
 				} else {
-					fmt.Fprintf(os.Stdout, "[Runix] Cron job %q stopped\n", name)
+					_, _ = fmt.Fprintf(os.Stdout, "[Runix] Cron job %q stopped\n", name)
 					return nil
 				}
 			}
@@ -112,11 +112,11 @@ func newCronCmd() *cobra.Command {
 					Name: name,
 				})
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed: %v\n", err)
+					_, _ = fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed: %v\n", err)
 				} else if !resp.Success {
 					return fmt.Errorf("daemon error: %s", resp.Error)
 				} else {
-					fmt.Fprintf(os.Stdout, "[Runix] Cron job %q triggered\n", name)
+					_, _ = fmt.Fprintf(os.Stdout, "[Runix] Cron job %q triggered\n", name)
 					return nil
 				}
 			}
@@ -130,7 +130,7 @@ func newCronCmd() *cobra.Command {
 
 func printCronJobs(jobs []scheduler.JobInfo, format string) error {
 	if len(jobs) == 0 {
-		fmt.Fprintln(os.Stdout, "No cron jobs")
+		_, _ = fmt.Fprintln(os.Stdout, "No cron jobs")
 		return nil
 	}
 
@@ -156,7 +156,7 @@ func printCronJobs(jobs []scheduler.JobInfo, format string) error {
 				lastRun,
 			)
 		}
-		fmt.Fprint(os.Stdout, tbl.Render())
+		_, _ = fmt.Fprint(os.Stdout, tbl.Render())
 	}
 	return nil
 }

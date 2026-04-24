@@ -35,7 +35,7 @@ func (f *fakeMetricsCollector) Get(pid int) (metrics.ProcessMetrics, bool) {
 func TestEnforceMemoryLimitsRestartsProcess(t *testing.T) {
 	col := &fakeMetricsCollector{}
 	sup := New(Options{MetricsCollector: col})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	proc, err := sup.AddProcess(context.Background(), types.ProcessConfig{
 		Name:             "mem-restart-test",
@@ -72,7 +72,7 @@ func TestEnforceMemoryLimitsHonorsAutoRestartFalse(t *testing.T) {
 	autoRestart := false
 	col := &fakeMetricsCollector{}
 	sup := New(Options{MetricsCollector: col})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	proc, err := sup.AddProcess(context.Background(), types.ProcessConfig{
 		Name:             "mem-no-restart-test-" + os.Getenv("GO_TEST"),

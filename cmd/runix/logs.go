@@ -53,14 +53,14 @@ Use --err to show only stderr, --out to show only stdout.`,
 					Lines:  lines,
 				})
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
+					_, _ = fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
 				} else if resp.Success {
 					var result struct {
 						Logs string `json:"logs"`
 					}
 					if err := json.Unmarshal(resp.Data, &result); err == nil {
 						if result.Logs == "" {
-							fmt.Fprintln(os.Stdout, "No logs available")
+							_, _ = fmt.Fprintln(os.Stdout, "No logs available")
 						} else {
 							output := result.Logs
 							if errOnly {
@@ -76,7 +76,7 @@ Use --err to show only stderr, --out to show only stdout.`,
 			// Resolve log paths from disk.
 			logPaths := resolveLogPaths(target)
 			if len(logPaths) == 0 {
-				fmt.Fprintln(os.Stdout, "No logs available")
+				_, _ = fmt.Fprintln(os.Stdout, "No logs available")
 				return nil
 			}
 
@@ -88,7 +88,7 @@ Use --err to show only stderr, --out to show only stdout.`,
 			}
 
 			if len(logPaths) == 0 {
-				fmt.Fprintln(os.Stdout, "No logs available")
+				_, _ = fmt.Fprintln(os.Stdout, "No logs available")
 				return nil
 			}
 
@@ -115,7 +115,7 @@ func showAllLogs(follow bool, numLines int, errOnly bool) error {
 	entries, err := os.ReadDir(appsDir)
 	if err != nil {
 		if os.IsNotExist(err) {
-			fmt.Fprintln(os.Stdout, "No logs available")
+			_, _ = fmt.Fprintln(os.Stdout, "No logs available")
 			return nil
 		}
 		return fmt.Errorf("failed to read apps directory: %w", err)
@@ -149,7 +149,7 @@ func showAllLogs(follow bool, numLines int, errOnly bool) error {
 
 	if !follow {
 		if len(allLines) == 0 {
-			fmt.Fprintln(os.Stdout, "No logs available")
+			_, _ = fmt.Fprintln(os.Stdout, "No logs available")
 			return nil
 		}
 
@@ -168,7 +168,7 @@ func showAllLogs(follow bool, numLines int, errOnly bool) error {
 			if errOnly && !strings.Contains(entry.line, "[err]") {
 				continue
 			}
-			fmt.Fprintf(os.Stdout, "%-15s | %s\n", entry.appName, entry.line)
+			_, _ = fmt.Fprintf(os.Stdout, "%-15s | %s\n", entry.appName, entry.line)
 		}
 		return nil
 	}
@@ -183,7 +183,7 @@ func readLogLines(path string, n int) []string {
 	if err != nil {
 		return nil
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	if _, err := seekTailWindow(f, maxLogReadBytes); err != nil {
 		return nil
@@ -237,7 +237,7 @@ func newFollowState(path, label string, seekEnd bool) (*followState, error) {
 
 	offset, err := f.Seek(0, io.SeekCurrent)
 	if err != nil {
-		f.Close()
+		_ = f.Close()
 		return nil, err
 	}
 	state.offset = offset
@@ -245,7 +245,7 @@ func newFollowState(path, label string, seekEnd bool) (*followState, error) {
 	if seekEnd {
 		offset, err = f.Seek(0, io.SeekEnd)
 		if err != nil {
-			f.Close()
+			_ = f.Close()
 			return nil, err
 		}
 		state.offset = offset
@@ -297,7 +297,7 @@ func (s *followState) readNewLines(write func(string)) (bool, error) {
 // streamAllLogs follows multiple log files concurrently.
 func streamAllLogs(paths []string) error {
 	if len(paths) == 0 {
-		fmt.Fprintln(os.Stdout, "No logs available")
+		_, _ = fmt.Fprintln(os.Stdout, "No logs available")
 		return nil
 	}
 
@@ -322,7 +322,7 @@ func streamAllLogs(paths []string) error {
 		for _, state := range states {
 			wrote, err := state.readNewLines(func(line string) {
 				if strings.HasSuffix(line, "\n") {
-					fmt.Fprintf(os.Stdout, "%-15s | %s", state.label, line)
+					_, _ = fmt.Fprintf(os.Stdout, "%-15s | %s", state.label, line)
 				}
 			})
 			if err != nil {
@@ -359,7 +359,7 @@ func printMergedLogs(paths []string, numLines int) error {
 	}
 
 	if len(all) == 0 {
-		fmt.Fprintln(os.Stdout, "No logs available")
+		_, _ = fmt.Fprintln(os.Stdout, "No logs available")
 		return nil
 	}
 
@@ -373,33 +373,7 @@ func printMergedLogs(paths []string, numLines int) error {
 		start = len(all) - numLines
 	}
 	for _, t := range all[start:] {
-		fmt.Fprintln(os.Stdout, t.line)
-	}
-	return nil
-}
-
-// printFilteredLogs prints lines matching a filter substring from all paths.
-func printFilteredLogs(paths []string, numLines int, filter string) error {
-	var matched []string
-	for _, p := range paths {
-		for _, line := range readLogLines(p, max(numLines*4, 400)) {
-			if strings.Contains(line, filter) {
-				matched = append(matched, line)
-			}
-		}
-	}
-
-	if len(matched) == 0 {
-		fmt.Fprintln(os.Stdout, "No logs available")
-		return nil
-	}
-
-	start := 0
-	if len(matched) > numLines {
-		start = len(matched) - numLines
-	}
-	for _, line := range matched[start:] {
-		fmt.Fprintln(os.Stdout, line)
+		_, _ = fmt.Fprintln(os.Stdout, t.line)
 	}
 	return nil
 }
@@ -407,7 +381,7 @@ func printFilteredLogs(paths []string, numLines int, filter string) error {
 func streamLogs(paths []string) error {
 	// Print last 20 lines from each file as initial buffer.
 	for _, p := range paths {
-		printLogs(p, 20)
+		_ = printLogs(p, 20)
 	}
 
 	states := make([]*followState, 0, len(paths))
@@ -457,7 +431,7 @@ func printLogs(path string, numLines int) error {
 	if err != nil {
 		return nil
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	if _, err := seekTailWindow(f, maxLogReadBytes); err != nil {
 		return fmt.Errorf("error seeking log file: %w", err)
@@ -483,7 +457,7 @@ func printLogs(path string, numLines int) error {
 	for j := 0; j < numLines && j < count; j++ {
 		line := buf[(start+j)%numLines]
 		if line != "" {
-			fmt.Fprintln(os.Stdout, line)
+			_, _ = fmt.Fprintln(os.Stdout, line)
 		}
 	}
 	return nil

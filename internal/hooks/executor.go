@@ -58,6 +58,10 @@ func (e *Executor) Run(ctx context.Context, hook *types.HookConfig, event string
 
 	cmd := exec.CommandContext(ctx, "sh", "-c", hook.Command)
 	setProcessGroup(cmd)
+	cmd.Cancel = func() error {
+		return killProcessGroup(cmd.Process)
+	}
+	cmd.WaitDelay = time.Second
 	cmd.Dir = cfg.Cwd
 	if cmd.Dir == "" {
 		cmd.Dir, _ = os.Getwd()

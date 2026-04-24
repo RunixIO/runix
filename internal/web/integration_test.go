@@ -28,7 +28,7 @@ func TestIntegration_LoginFlow(t *testing.T) {
 			RestartPolicy: types.RestartNever,
 		},
 	})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	authenticator, err := auth.NewAuthenticator(types.AuthSettings{
 		Enabled:  true,
@@ -43,7 +43,7 @@ func TestIntegration_LoginFlow(t *testing.T) {
 	srv := NewServerWithAuth(sup, "127.0.0.1:18923", authenticator)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	go srv.Start(ctx)
+	go func() { _ = srv.Start(ctx) }()
 	time.Sleep(500 * time.Millisecond) // wait for server to start
 
 	client := &http.Client{
@@ -60,7 +60,7 @@ func TestIntegration_LoginFlow(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 
 		if resp.StatusCode != http.StatusFound {
 			t.Errorf("expected 302, got %d", resp.StatusCode)
@@ -83,7 +83,7 @@ func TestIntegration_LoginFlow(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 
 		if resp.StatusCode != http.StatusUnauthorized {
 			t.Errorf("expected 401, got %d", resp.StatusCode)
@@ -101,7 +101,7 @@ func TestIntegration_LoginFlow(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 
 		if resp.StatusCode != http.StatusOK {
 			t.Errorf("expected 200, got %d", resp.StatusCode)
@@ -121,7 +121,7 @@ func TestIntegration_LoginFlow(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer resp.Body.Close()
+		defer func() { _ = resp.Body.Close() }()
 
 		if resp.StatusCode != http.StatusOK {
 			body, _ := io.ReadAll(resp.Body)
@@ -151,7 +151,7 @@ func TestIntegration_LoginFlow(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		loginResp.Body.Close()
+		_ = loginResp.Body.Close()
 
 		if loginResp.StatusCode != http.StatusOK {
 			t.Fatalf("login failed: %d", loginResp.StatusCode)
@@ -167,7 +167,7 @@ func TestIntegration_LoginFlow(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		dashResp.Body.Close()
+		_ = dashResp.Body.Close()
 
 		if dashResp.StatusCode != http.StatusOK {
 			t.Errorf("dashboard should be 200 after login, got %d", dashResp.StatusCode)
@@ -182,7 +182,7 @@ func TestIntegration_LoginFlow(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		logoutResp.Body.Close()
+		_ = logoutResp.Body.Close()
 
 		if logoutResp.StatusCode != http.StatusOK {
 			t.Errorf("logout: expected 200, got %d", logoutResp.StatusCode)
@@ -195,7 +195,7 @@ func TestIntegration_LoginFlow(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		dashResp2.Body.Close()
+		_ = dashResp2.Body.Close()
 
 		if dashResp2.StatusCode != http.StatusFound {
 			t.Errorf("after logout, dashboard should redirect (302), got %d", dashResp2.StatusCode)
@@ -215,7 +215,7 @@ func TestStart_ReturnsErrorWhenPortInUse(t *testing.T) {
 			RestartPolicy: types.RestartNever,
 		},
 	})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	authenticator, err := auth.NewAuthenticator(types.AuthSettings{
 		Enabled:  true,
@@ -231,7 +231,7 @@ func TestStart_ReturnsErrorWhenPortInUse(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer ln.Close()
+	defer func() { _ = ln.Close() }()
 
 	srv := NewServerWithAuth(sup, ln.Addr().String(), authenticator)
 	ctx, cancel := context.WithCancel(context.Background())

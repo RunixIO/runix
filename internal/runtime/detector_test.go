@@ -8,7 +8,9 @@ import (
 
 func TestDetectGo(t *testing.T) {
 	dir := t.TempDir()
-	os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module test\n"), 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "go.mod"), []byte("module test\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	d := NewDetector()
 	rt, err := d.Detect(dir)
@@ -22,7 +24,9 @@ func TestDetectGo(t *testing.T) {
 
 func TestDetectPython(t *testing.T) {
 	dir := t.TempDir()
-	os.WriteFile(filepath.Join(dir, "requirements.txt"), []byte("flask\n"), 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "requirements.txt"), []byte("flask\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	d := NewDetector()
 	rt, err := d.Detect(dir)
@@ -36,7 +40,9 @@ func TestDetectPython(t *testing.T) {
 
 func TestDetectNode(t *testing.T) {
 	dir := t.TempDir()
-	os.WriteFile(filepath.Join(dir, "package.json"), []byte("{}"), 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "package.json"), []byte("{}"), 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	d := NewDetector()
 	rt, err := d.Detect(dir)
@@ -50,7 +56,9 @@ func TestDetectNode(t *testing.T) {
 
 func TestDetectBun(t *testing.T) {
 	dir := t.TempDir()
-	os.WriteFile(filepath.Join(dir, "bun.lockb"), []byte("bun"), 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "bun.lockb"), []byte("bun"), 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	d := NewDetector()
 	rt, err := d.Detect(dir)
@@ -74,7 +82,9 @@ func TestDetectEmpty(t *testing.T) {
 
 func TestDetectRuby(t *testing.T) {
 	dir := t.TempDir()
-	os.WriteFile(filepath.Join(dir, "Gemfile"), []byte("source 'https://rubygems.org'\n"), 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "Gemfile"), []byte("source 'https://rubygems.org'\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	d := NewDetector()
 	rt, err := d.Detect(dir)
@@ -88,7 +98,9 @@ func TestDetectRuby(t *testing.T) {
 
 func TestDetectPHP(t *testing.T) {
 	dir := t.TempDir()
-	os.WriteFile(filepath.Join(dir, "composer.json"), []byte(`{"require":{}}`), 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "composer.json"), []byte(`{"require":{}}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	d := NewDetector()
 	rt, err := d.Detect(dir)

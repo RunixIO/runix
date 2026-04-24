@@ -167,7 +167,9 @@ func TestLoginAPI_WrongPassword(t *testing.T) {
 	}
 
 	var resp loginResponse
-	json.NewDecoder(w.Body).Decode(&resp)
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
 	if resp.Error == "" {
 		t.Error("expected error message in response")
 	}
@@ -277,7 +279,9 @@ func TestAuthStatusAPI_Unauthenticated(t *testing.T) {
 	}
 
 	var resp authStatusResponse
-	json.NewDecoder(w.Body).Decode(&resp)
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
 	if resp.Authenticated {
 		t.Error("expected authenticated=false")
 	}
@@ -308,7 +312,9 @@ func TestAuthStatusAPI_Authenticated(t *testing.T) {
 	}
 
 	var resp authStatusResponse
-	json.NewDecoder(w.Body).Decode(&resp)
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
 	if !resp.Authenticated {
 		t.Error("expected authenticated=true")
 	}
@@ -450,7 +456,9 @@ func TestWebAuthMiddleware_APIUnauthorized(t *testing.T) {
 	}
 
 	var resp loginResponse
-	json.NewDecoder(w.Body).Decode(&resp)
+	if err := json.NewDecoder(w.Body).Decode(&resp); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
 	if resp.Error == "" {
 		t.Error("expected error in 401 response")
 	}
@@ -532,7 +540,9 @@ func TestLoginAPI_FullFlow(t *testing.T) {
 	srv.handleAuthStatusAPI(statusW, statusReq)
 
 	var statusResp authStatusResponse
-	json.NewDecoder(statusW.Body).Decode(&statusResp)
+	if err := json.NewDecoder(statusW.Body).Decode(&statusResp); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
 	if !statusResp.Authenticated {
 		t.Error("status: expected authenticated=true after login")
 	}
@@ -557,7 +567,9 @@ func TestLoginAPI_FullFlow(t *testing.T) {
 	srv.handleAuthStatusAPI(statusW2, statusReq2)
 
 	var statusResp2 authStatusResponse
-	json.NewDecoder(statusW2.Body).Decode(&statusResp2)
+	if err := json.NewDecoder(statusW2.Body).Decode(&statusResp2); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
 	if statusResp2.Authenticated {
 		t.Error("status: expected authenticated=false after logout")
 	}

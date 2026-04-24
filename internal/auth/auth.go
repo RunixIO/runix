@@ -247,17 +247,6 @@ func WebSocketMiddleware(auth Authenticator) func(http.Handler) http.Handler {
 	}
 }
 
-func challengeForMode(mode string) string {
-	switch mode {
-	case "basic":
-		return `Basic realm="Runix"`
-	case "token":
-		return `Bearer realm="Runix"`
-	default:
-		return `Basic realm="Runix"`
-	}
-}
-
 // --- Password Hashing ---
 
 // HashPassword generates a bcrypt hash from a plain text password.

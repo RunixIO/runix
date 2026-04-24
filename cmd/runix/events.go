@@ -24,7 +24,7 @@ func newEventsCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dd := dataDir()
 			bus := events.NewBus(dd)
-			defer bus.Close()
+			defer func() { _ = bus.Close() }()
 
 			since := time.Time{}
 			if sinceStr != "" {
@@ -75,5 +75,5 @@ func newEventsCmd() *cobra.Command {
 
 func printEvent(evt events.Event) {
 	data, _ := json.Marshal(evt)
-	fmt.Fprintln(os.Stdout, string(data))
+	_, _ = fmt.Fprintln(os.Stdout, string(data))
 }

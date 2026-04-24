@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/mattn/go-isatty"
@@ -98,11 +97,11 @@ func initConfig(root *cobra.Command) {
 	viper.SetEnvPrefix("RUNIX")
 
 	// Bind --data-dir flag to config.
-	viper.BindPFlag("daemon.data_dir", root.PersistentFlags().Lookup("data-dir"))
+	_ = viper.BindPFlag("daemon.data_dir", root.PersistentFlags().Lookup("data-dir"))
 
 	if err := viper.ReadInConfig(); err != nil {
 		if !isConfigNotFoundError(err) {
-			fmt.Fprintf(os.Stderr, "warning: error reading config: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "warning: error reading config: %v\n", err)
 		}
 	}
 }
@@ -134,11 +133,6 @@ func setupLogging() {
 // dataDir returns the Runix data directory.
 func dataDir() string {
 	return daemon.ResolveDataDir(viper.GetString("daemon.data_dir"))
-}
-
-// runtimeDir returns the runtime directory for sockets and PID files.
-func runtimeDir() string {
-	return filepath.Join(dataDir(), "tmp")
 }
 
 // daemonClient creates an IPC client for the daemon.
@@ -184,8 +178,8 @@ func ensureDaemon() (*daemon.Client, error) {
 
 	log.Debug().Msg("daemon not running, starting it")
 	if cfgFile != "" {
-		os.Setenv("RUNIX_CONFIG", cfgFile)
-		defer os.Unsetenv("RUNIX_CONFIG")
+		_ = os.Setenv("RUNIX_CONFIG", cfgFile)
+		defer func() { _ = os.Unsetenv("RUNIX_CONFIG") }()
 	}
 	if err := daemon.StartDaemon(); err != nil {
 		return nil, fmt.Errorf("failed to start daemon: %w", err)

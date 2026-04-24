@@ -50,7 +50,7 @@ func runInspect(target string, format string, logLines int) error {
 			Target: target,
 		})
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
+			_, _ = fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
 		} else if resp.Success {
 			var info types.ProcessInfo
 			if err := json.Unmarshal(resp.Data, &info); err == nil {
@@ -176,14 +176,14 @@ func printInspect(info types.ProcessInfo, format string, logLines int) error {
 			kv.Add("Env", strings.Join(pairs, ", "))
 		}
 
-		fmt.Fprint(os.Stdout, kv.Render())
+		_, _ = fmt.Fprint(os.Stdout, kv.Render())
 
 		// Show recent logs if requested.
 		if logLines > 0 {
 			stdoutPath := filepath.Join(appDir, "stdout.log")
 			if _, err := os.Stat(stdoutPath); err == nil {
-				fmt.Fprintf(os.Stdout, "\n--- Last %d lines ---\n", logLines)
-				printLogs(stdoutPath, logLines)
+				_, _ = fmt.Fprintf(os.Stdout, "\n--- Last %d lines ---\n", logLines)
+				_ = printLogs(stdoutPath, logLines)
 			}
 		}
 

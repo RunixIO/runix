@@ -11,6 +11,6 @@ func (c *Checker) checkTCP(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	conn.Close()
+	_ = conn.Close()
 	return nil
 }

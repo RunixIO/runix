@@ -34,7 +34,7 @@ func BenchmarkBuildEnvEmpty(b *testing.B) {
 // BenchmarkList measures concurrent-safe process listing.
 func BenchmarkList(b *testing.B) {
 	sup := setupBenchSupervisor(b, 50)
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -45,7 +45,7 @@ func BenchmarkList(b *testing.B) {
 // BenchmarkGet measures process lookup by ID.
 func BenchmarkGet(b *testing.B) {
 	sup := setupBenchSupervisor(b, 50)
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	procs := sup.List()
 	if len(procs) == 0 {
@@ -55,25 +55,25 @@ func BenchmarkGet(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		sup.Get(id)
+		_, _ = sup.Get(id)
 	}
 }
 
 // BenchmarkGetByName measures process lookup by name.
 func BenchmarkGetByName(b *testing.B) {
 	sup := setupBenchSupervisor(b, 50)
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		sup.Get("bench-proc-25")
+		_, _ = sup.Get("bench-proc-25")
 	}
 }
 
 // BenchmarkProcessInfo measures the Info() snapshot method.
 func BenchmarkProcessInfo(b *testing.B) {
 	sup := setupBenchSupervisor(b, 1)
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	procs := sup.List()
 	if len(procs) == 0 {
@@ -143,7 +143,7 @@ func BenchmarkShouldRestart(b *testing.B) {
 func setupBenchSupervisor(b *testing.B, n int) *Supervisor {
 	dir := b.TempDir()
 	logDir := dir + "/logs"
-	os.MkdirAll(logDir, 0o755)
+	_ = os.MkdirAll(logDir, 0o755)
 
 	sup := New(Options{
 		LogDir: logDir,

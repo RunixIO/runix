@@ -93,7 +93,7 @@ func (h *HelpView) View() string {
 				Width(maxKey + 2)
 			descStyle := lipgloss.NewStyle().
 				Foreground(colorMuted)
-			b.WriteString(fmt.Sprintf("    %s %s\n", keyStyle.Render(kb.key), descStyle.Render(kb.desc)))
+			fmt.Fprintf(&b, "    %s %s\n", keyStyle.Render(kb.key), descStyle.Render(kb.desc))
 		}
 
 		if i < len(sections)-1 {

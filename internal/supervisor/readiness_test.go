@@ -20,7 +20,7 @@ func TestAddProcessWaitReadySuccess(t *testing.T) {
 			RestartPolicy: types.RestartNever,
 		},
 	})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	proc, err := sup.AddProcess(context.Background(), types.ProcessConfig{
 		Name:          "ready-success",
@@ -63,7 +63,7 @@ func TestAddProcessWaitReadyTimeout(t *testing.T) {
 			RestartPolicy: types.RestartNever,
 		},
 	})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	_, err := sup.AddProcess(context.Background(), types.ProcessConfig{
 		Name:          "ready-timeout",
@@ -98,7 +98,7 @@ func TestAddProcessWithoutWaitReadyStartsReady(t *testing.T) {
 			RestartPolicy: types.RestartNever,
 		},
 	})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	proc, err := sup.AddProcess(context.Background(), types.ProcessConfig{
 		Name:          "no-wait-ready",
@@ -131,7 +131,7 @@ func TestRestartProcessWaitReadySuccess(t *testing.T) {
 			RestartPolicy: types.RestartNever,
 		},
 	})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	proc, err := sup.AddProcess(context.Background(), types.ProcessConfig{
 		Name:          "restart-ready-success",
@@ -181,7 +181,7 @@ func TestReloadProcessWaitReadyTimeout(t *testing.T) {
 			RestartPolicy: types.RestartNever,
 		},
 	})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	proc, err := sup.AddProcess(context.Background(), types.ProcessConfig{
 		Name:          "reload-ready-timeout",

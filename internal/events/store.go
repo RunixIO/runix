@@ -47,7 +47,7 @@ func (s *Store) Append(evt Event) {
 
 	data, _ := json.Marshal(evt)
 	n, _ := s.file.Write(data)
-	s.file.Write([]byte("\n"))
+	_, _ = s.file.Write([]byte("\n"))
 	s.written.Add(int64(n + 1))
 
 	// Only compact when we've appended enough since the last compact.
@@ -82,7 +82,7 @@ func (s *Store) Query(since time.Time, eventTypes ...EventType) []Event {
 	if err != nil {
 		return nil
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	typeSet := make(map[EventType]bool)
 	for _, et := range eventTypes {
@@ -112,7 +112,7 @@ func (s *Store) compactLocked() error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	fi, err := f.Stat()
 	if err != nil {

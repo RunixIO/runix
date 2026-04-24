@@ -16,7 +16,7 @@ func TestRollingReloadWaitReadyRequiresHealthCheck(t *testing.T) {
 			RestartPolicy: types.RestartNever,
 		},
 	})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	proc, err := sup.AddProcess(context.Background(), types.ProcessConfig{
 		Name:          "no-healthcheck",
@@ -53,7 +53,7 @@ func TestRollingReloadWaitReadyRejectsFullBatch(t *testing.T) {
 			RestartPolicy: types.RestartNever,
 		},
 	})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	for _, name := range []string{"api-1", "api-2"} {
 		_, err := sup.AddProcess(context.Background(), types.ProcessConfig{

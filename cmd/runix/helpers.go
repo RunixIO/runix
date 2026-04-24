@@ -89,7 +89,7 @@ func outputResult(format string, v any, textFn func()) {
 	if format == "json" {
 		enc := json.NewEncoder(os.Stdout)
 		enc.SetIndent("", "  ")
-		enc.Encode(v)
+		_ = enc.Encode(v)
 		return
 	}
 	textFn()

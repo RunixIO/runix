@@ -147,7 +147,7 @@ func (s *Server) Start(ctx context.Context) error {
 				return s.shutdown()
 			case syscall.SIGHUP:
 				log.Info().Msg("received SIGHUP, reloading config")
-				s.reloadConfig()
+				_ = s.reloadConfig()
 			}
 		case <-serverCtx.Done():
 			return s.shutdown()
