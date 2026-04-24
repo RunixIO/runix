@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Runix - Process Manager</title>
+    <style>
+      :root {
+        --bg: #1a1b26;
+        --surface: #24283b;
+        --surface-alt: #1f2335;
+        --border: #3b4261;
+        --text: #c0caf5;
+        --text-dim: #565f89;
+        --text-muted: #a9b1d6;
+        --primary: #7aa2f7;
+        --green: #9ece6a;
+        --red: #f7768e;
+        --yellow: #e0af68;
+        --orange: #ff9e64;
+        --magenta: #bb9af7;
+        --cyan: #7dcfff;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.5;
+        min-height: 100vh;
+      }
+
+      /* --- Header --- */
+      header {
+        background: var(--surface);
+        padding: 12px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+      }
+      header .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      header h1 {
+        font-size: 18px;
+        color: var(--primary);
+        font-weight: 700;
+        letter-spacing: -0.3px;
+      }
+      header .connection {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--text-dim);
+      }
+      header .connection .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--text-dim);
+        display: inline-block;
+      }
+      header .connection.connected .dot {
+        background: var(--green);
+        box-shadow: 0 0 6px var(--green);
+      }
+      header .connection.disconnected .dot {
+        background: var(--red);
+      }
+
+      /* --- Summary bar --- */
+      .summary-bar {
+        display: flex;
+        gap: 24px;
+        padding: 14px 24px;
+        background: var(--surface-alt);
+        border-bottom: 1px solid var(--border);
+        flex-wrap: wrap;
+      }
+      .summary-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+      .summary-item .count {
+        font-weight: 700;
+        font-size: 16px;
+      }
+      .summary-item.running .count { color: var(--green); }
+      .summary-item.stopped .count { color: var(--red); }
+      .summary-item.crashed .count { color: var(--orange); }
+      .summary-item.total .count { color: var(--primary); }
+
+      /* --- Main --- */
+      main {
+        padding: 20px 24px;
+      }
+
+      /* --- Table --- */
+      .table-wrapper {
+        overflow-x: auto;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 700px;
+      }
+      th {
+        text-align: left;
+        padding: 10px 14px;
+        border-bottom: 2px solid var(--border);
+        color: var(--primary);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 600;
+        background: var(--surface-alt);
+        white-space: nowrap;
+      }
+      td {
+        padding: 10px 14px;
+        border-bottom: 1px solid rgba(59, 66, 97, 0.4);
+        font-size: 13px;
+        vertical-align: middle;
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+      tr:hover td {
+        background: rgba(122, 162, 247, 0.04);
+      }
+      td.mono {
+        font-family: "SF Mono", "Fira Code", monospace;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+      td.name {
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      /* --- Badges --- */
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+      }
+      .badge .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+      .badge-running {
+        background: rgba(158, 206, 106, 0.12);
+        color: var(--green);
+      }
+      .badge-running .dot {
+        background: var(--green);
+        box-shadow: 0 0 4px var(--green);
+      }
+      .badge-stopped {
+        background: rgba(247, 118, 142, 0.1);
+        color: var(--red);
+      }
+      .badge-stopped .dot { background: var(--red); }
+      .badge-crashed {
+        background: rgba(255, 158, 100, 0.12);
+        color: var(--orange);
+      }
+      .badge-crashed .dot { background: var(--orange); }
+      .badge-starting {
+        background: rgba(125, 207, 255, 0.1);
+        color: var(--cyan);
+      }
+      .badge-starting .dot { background: var(--cyan); }
+      .badge-stopping {
+        background: rgba(224, 175, 104, 0.1);
+        color: var(--yellow);
+      }
+      .badge-stopping .dot { background: var(--yellow); }
+      .badge-waiting {
+        background: rgba(224, 175, 104, 0.1);
+        color: var(--yellow);
+      }
+      .badge-waiting .dot { background: var(--yellow); }
+      .badge-errored {
+        background: rgba(247, 118, 142, 0.1);
+        color: var(--red);
+      }
+      .badge-errored .dot { background: var(--red); }
+
+      /* --- Actions --- */
+      .actions {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .btn {
+        padding: 5px 12px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text);
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.15s ease;
+        white-space: nowrap;
+      }
+      .btn:hover {
+        background: var(--border);
+        border-color: var(--primary);
+      }
+      .btn:active {
+        transform: scale(0.97);
+      }
+      .btn-danger {
+        border-color: rgba(247, 118, 142, 0.4);
+        color: var(--red);
+      }
+      .btn-danger:hover {
+        background: rgba(247, 118, 142, 0.12);
+        border-color: var(--red);
+      }
+      .btn-primary {
+        border-color: rgba(122, 162, 247, 0.4);
+        color: var(--primary);
+      }
+      .btn-primary:hover {
+        background: rgba(122, 162, 247, 0.1);
+        border-color: var(--primary);
+      }
+
+      /* --- Empty state --- */
+      .empty-state {
+        text-align: center;
+        padding: 64px 24px;
+        color: var(--text-dim);
+      }
+      .empty-state .icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.4;
+      }
+      .empty-state h3 {
+        font-size: 16px;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+        font-weight: 600;
+      }
+      .empty-state p {
+        font-size: 13px;
+        color: var(--text-dim);
+        max-width: 400px;
+        margin: 0 auto;
+      }
+
+      /* --- Log panel --- */
+      #log-panel {
+        display: none;
+        margin-top: 20px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      #log-panel.visible {
+        display: block;
+      }
+      #log-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 16px;
+        background: var(--surface-alt);
+        border-bottom: 1px solid var(--border);
+      }
+      #log-header .left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      #log-header h3 {
+        font-size: 13px;
+        color: var(--primary);
+        font-weight: 600;
+      }
+      #log-header .log-hint {
+        font-size: 11px;
+        color: var(--text-dim);
+      }
+      #log-header .right {
+        display: flex;
+        gap: 8px;
+      }
+      #log-content {
+        padding: 16px;
+        font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+        font-size: 12px;
+        max-height: 400px;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-break: break-all;
+        color: var(--text-muted);
+        line-height: 1.6;
+        background: var(--bg);
+      }
+      #log-content::-webkit-scrollbar {
+        width: 6px;
+      }
+      #log-content::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      #log-content::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
+      }
+
+      /* --- Toast notifications --- */
+      #toast-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .toast {
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        animation: toast-in 0.2s ease-out;
+        max-width: 360px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+      .toast.toast-out {
+        animation: toast-out 0.2s ease-in forwards;
+      }
+      .toast-success {
+        background: rgba(158, 206, 106, 0.15);
+        border: 1px solid rgba(158, 206, 106, 0.3);
+        color: var(--green);
+      }
+      .toast-error {
+        background: rgba(247, 118, 142, 0.15);
+        border: 1px solid rgba(247, 118, 142, 0.3);
+        color: var(--red);
+      }
+      .toast-info {
+        background: rgba(122, 162, 247, 0.12);
+        border: 1px solid rgba(122, 162, 247, 0.3);
+        color: var(--primary);
+      }
+
+      @keyframes toast-in {
+        from { opacity: 0; transform: translateY(10px) scale(0.96); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+      @keyframes toast-out {
+        from { opacity: 1; transform: translateY(0) scale(1); }
+        to { opacity: 0; transform: translateY(-10px) scale(0.96); }
+      }
+
+      /* --- Confirm modal --- */
+      #confirm-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 50;
+        align-items: center;
+        justify-content: center;
+      }
+      #confirm-overlay.visible {
+        display: flex;
+      }
+      #confirm-dialog {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      }
+      #confirm-dialog h3 {
+        font-size: 15px;
+        color: var(--text);
+        margin-bottom: 8px;
+        font-weight: 600;
+      }
+      #confirm-dialog p {
+        font-size: 13px;
+        color: var(--text-dim);
+        margin-bottom: 20px;
+        line-height: 1.5;
+      }
+      #confirm-dialog .dialog-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+      }
+      #confirm-dialog .btn-confirm {
+        padding: 7px 16px;
+        border-radius: 6px;
+        border: none;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      #confirm-dialog .btn-cancel {
+        padding: 7px 16px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text);
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      #confirm-dialog .btn-cancel:hover {
+        background: var(--border);
+      }
+      #confirm-dialog.danger .btn-confirm {
+        background: var(--red);
+        color: #1a1b26;
+      }
+      #confirm-dialog.danger .btn-confirm:hover {
+        background: #ff8fa3;
+      }
+
+      /* --- Footer --- */
+      footer {
+        padding: 12px 24px;
+        border-top: 1px solid var(--border);
+        font-size: 11px;
+        color: var(--text-dim);
+        display: flex;
+        justify-content: space-between;
+      }
+
+      /* --- Responsive --- */
+      @media (max-width: 768px) {
+        header {
+          padding: 10px 16px;
+        }
+        .summary-bar {
+          padding: 10px 16px;
+          gap: 16px;
+        }
+        main {
+          padding: 16px;
+        }
+        th, td {
+          padding: 8px 10px;
+        }
+        .actions {
+          flex-direction: column;
+          gap: 4px;
+        }
+        footer {
+          flex-direction: column;
+          gap: 4px;
+          text-align: center;
+        }
+        #toast-container {
+          left: 16px;
+          right: 16px;
+          bottom: 16px;
+        }
+        .toast {
+          max-width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <h1>Runix</h1>
+      </div>
+      <div class="connection disconnected" id="connection-status">
+        <span class="dot"></span>
+        <span class="label">Disconnected</span>
+      </div>
+    </header>
+
+    <div class="summary-bar" id="summary-bar">
+      <div class="summary-item total">
+        <span class="count" id="stat-total">0</span>
+        <span>Total</span>
+      </div>
+      <div class="summary-item running">
+        <span class="count" id="stat-running">0</span>
+        <span>Running</span>
+      </div>
+      <div class="summary-item stopped">
+        <span class="count" id="stat-stopped">0</span>
+        <span>Stopped</span>
+      </div>
+      <div class="summary-item crashed">
+        <span class="count" id="stat-crashed">0</span>
+        <span>Crashed</span>
+      </div>
+    </div>
+
+    <main>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Runtime</th>
+              <th>State</th>
+              <th>Ready</th>
+              <th>PID</th>
+              <th>CPU%</th>
+              <th>Mem</th>
+              <th>Restarts</th>
+              <th>Uptime</th>
+              <th>Last Event</th>
+              <th>Reason</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="process-list">
+            <tr>
+              <td colspan="13">
+                <div class="empty-state">
+                  <div class="icon">...</div>
+                  <h3>Loading processes</h3>
+                  <p>Connecting to Runix daemon...</p>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="log-panel">
+        <div id="log-header">
+          <div class="left">
+            <h3 id="log-title">Logs</h3>
+            <span class="log-hint" id="log-lines"></span>
+          </div>
+          <div class="right">
+            <button class="btn" type="button" onclick="copyLogs()">Copy</button>
+            <button class="btn" type="button" onclick="refreshLogs()">Refresh</button>
+            <button class="btn" type="button" onclick="closeLogs()">Close</button>
+          </div>
+        </div>
+        <div id="log-content"></div>
+      </div>
+    </main>
+
+    <footer>
+      <span>Runix Process Manager</span>
+      <span id="last-updated"></span>
+    </footer>
+
+    <!-- Toast container -->
+    <div id="toast-container"></div>
+
+    <!-- Confirm modal -->
+    <div id="confirm-overlay">
+      <div id="confirm-dialog" class="danger">
+        <h3 id="confirm-title">Confirm action</h3>
+        <p id="confirm-message">Are you sure?</p>
+        <div class="dialog-actions">
+          <button class="btn-cancel" type="button" onclick="confirmCancel()">Cancel</button>
+          <button class="btn-confirm" type="button" id="confirm-ok">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // --- State ---
+      let ws;
+      let currentLogId = null;
+      let confirmCallback = null;
+      let allProcesses = [];
+
+      // --- WebSocket ---
+      function connect() {
+        const proto = location.protocol === "https:" ? "wss:" : "ws:";
+        ws = new WebSocket(proto + "//" + location.host + "/ws");
+
+        ws.onopen = () => {
+          setConnectionStatus(true);
+        };
+
+        ws.onclose = () => {
+          setConnectionStatus(false);
+          setTimeout(connect, 3000);
+        };
+
+        ws.onmessage = (e) => {
+          const msg = JSON.parse(e.data);
+          if (msg.type === "process_list") {
+            allProcesses = msg.processes || [];
+            renderProcesses(allProcesses);
+            updateSummary(allProcesses);
+            updateTimestamp();
+          }
+        };
+      }
+
+      function setConnectionStatus(connected) {
+        const el = document.getElementById("connection-status");
+        if (connected) {
+          el.className = "connection connected";
+          el.querySelector(".label").textContent = "Connected";
+        } else {
+          el.className = "connection disconnected";
+          el.querySelector(".label").textContent = "Disconnected";
+        }
+      }
+
+      function updateTimestamp() {
+        const el = document.getElementById("last-updated");
+        const now = new Date();
+        el.textContent = "Updated " + now.toLocaleTimeString();
+      }
+
+      // --- Summary ---
+      function updateSummary(procs) {
+        let running = 0, stopped = 0, crashed = 0;
+        (procs || []).forEach((p) => {
+          switch (p.state) {
+            case "running":
+            case "starting":
+              running++;
+              break;
+            case "crashed":
+            case "errored":
+              crashed++;
+              break;
+            default:
+              stopped++;
+          }
+        });
+        document.getElementById("stat-total").textContent = procs ? procs.length : 0;
+        document.getElementById("stat-running").textContent = running;
+        document.getElementById("stat-stopped").textContent = stopped;
+        document.getElementById("stat-crashed").textContent = crashed;
+      }
+
+      // --- Render ---
+      function renderProcesses(procs) {
+        const tbody = document.getElementById("process-list");
+        if (!procs || procs.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="13"><div class="empty-state">' +
+            '<div class="icon">&#9679;</div>' +
+            "<h3>No processes running</h3>" +
+            "<p>Add processes to your runix.yaml and start them to see them here.</p>" +
+            "</div></td></tr>";
+          return;
+        }
+        tbody.innerHTML = procs
+          .map((p) => {
+            const id = p.id ? p.id.substring(0, 8) : "-";
+            const state = p.state || "unknown";
+            const badgeCls = "badge badge-" + state;
+            const ready = p.ready ? "yes" : "no";
+            const pid = p.pid > 0 ? p.pid : "-";
+            const cpu = p.cpu_percent ? p.cpu_percent.toFixed(1) : "0.0";
+            const mem = formatBytes(p.memory_bytes || 0);
+            const restarts = p.restarts || 0;
+            const uptime = formatUptime(p.uptime || 0);
+            const lastEvent = p.last_event || "-";
+            const lastReason = p.last_reason || "-";
+            return (
+              "<tr>" +
+              '<td class="mono">' + id + "</td>" +
+              '<td class="name">' + esc(p.name) + "</td>" +
+              "<td>" + esc(p.runtime) + "</td>" +
+              '<td><span class="' + badgeCls + '"><span class="dot"></span>' + state + "</span></td>" +
+              '<td class="mono">' + ready + "</td>" +
+              '<td class="mono">' + pid + "</td>" +
+              '<td class="mono">' + cpu + "</td>" +
+              '<td class="mono">' + mem + "</td>" +
+              '<td class="mono">' + restarts + "</td>" +
+              "<td>" + uptime + "</td>" +
+              "<td>" + esc(lastEvent) + "</td>" +
+              "<td title="" + esc(lastReason) + "">" + esc(truncate(lastReason, 48)) + "</td>" +
+              '<td class="actions">' +
+              '<button class="btn btn-primary" type="button" onclick="restartProc(\'' + id + "')\">Restart</button>" +
+              '<button class="btn" type="button" onclick="stopProc(\'' + id + "')\">Stop</button>" +
+              '<button class="btn" type="button" onclick="showLogs(\'' + id + "')\">Logs</button>" +
+              '<button class="btn btn-danger" type="button" onclick="deleteProc(\'' + id + "', '" + esc(p.name) + "')\">Delete</button>" +
+              "</td></tr>"
+            );
+          })
+          .join("");
+      }
+
+      function formatUptime(ns) {
+        if (!ns || ns <= 0) return "-";
+        const s = Math.floor(ns / 1e9);
+        if (s < 60) return s + "s";
+        const m = Math.floor(s / 60);
+        if (m < 60) return m + "m";
+        const h = Math.floor(m / 60);
+        if (h < 24) return h + "h";
+        return Math.floor(h / 24) + "d";
+      }
+
+      function formatBytes(b) {
+        if (b <= 0) return "-";
+        if (b < 1024) return b + "b";
+        if (b < 1048576) return (b / 1024).toFixed(1) + "kb";
+        if (b < 1073741824) return (b / 1048576).toFixed(1) + "mb";
+        return (b / 1073741824).toFixed(1) + "gb";
+      }
+
+      function esc(s) {
+        const d = document.createElement("div");
+        d.textContent = s || "";
+        return d.innerHTML;
+      }
+
+      function truncate(s, max) {
+        if (!s || s.length <= max) return s || "";
+        return s.slice(0, max - 1) + "...";
+      }
+
+      // --- Toast ---
+      function showToast(message, type) {
+        type = type || "info";
+        const container = document.getElementById("toast-container");
+        const toast = document.createElement("div");
+        toast.className = "toast toast-" + type;
+        toast.textContent = message;
+        container.appendChild(toast);
+        setTimeout(() => {
+          toast.classList.add("toast-out");
+          setTimeout(() => toast.remove(), 200);
+        }, 3000);
+      }
+
+      // --- Confirm dialog ---
+      function showConfirm(title, message, onConfirm) {
+        document.getElementById("confirm-title").textContent = title;
+        document.getElementById("confirm-message").textContent = message;
+        confirmCallback = onConfirm;
+        document.getElementById("confirm-overlay").classList.add("visible");
+      }
+
+      function confirmOk() {
+        document.getElementById("confirm-overlay").classList.remove("visible");
+        if (confirmCallback) {
+          confirmCallback();
+          confirmCallback = null;
+        }
+      }
+
+      function confirmCancel() {
+        document.getElementById("confirm-overlay").classList.remove("visible");
+        confirmCallback = null;
+      }
+
+      document.getElementById("confirm-ok").addEventListener("click", confirmOk);
+
+      document.getElementById("confirm-overlay").addEventListener("click", (e) => {
+        if (e.target === e.currentTarget) confirmCancel();
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          const overlay = document.getElementById("confirm-overlay");
+          if (overlay.classList.contains("visible")) {
+            confirmCancel();
+          } else {
+            closeLogs();
+          }
+        }
+      });
+
+      // --- API calls ---
+      async function apiCall(path, method) {
+        try {
+          const resp = await fetch(path, { method: method || "POST" });
+          if (!resp.ok) {
+            const data = await resp.json().catch(() => ({}));
+            showToast(data.error || "Request failed", "error");
+            return false;
+          }
+          return true;
+        } catch (e) {
+          showToast("Network error: " + e.message, "error");
+          return false;
+        }
+      }
+
+      async function restartProc(id) {
+        showToast("Restarting " + id + "...", "info");
+        if (await apiCall("/api/v1/processes/" + id + "/restart")) {
+          showToast("Process restarted", "success");
+        }
+      }
+
+      async function stopProc(id) {
+        showToast("Stopping " + id + "...", "info");
+        if (await apiCall("/api/v1/processes/" + id + "/stop")) {
+          showToast("Process stopped", "success");
+        }
+      }
+
+      function deleteProc(id, name) {
+        showConfirm(
+          "Delete process",
+          'Delete "' + (name || id) + '"? This action cannot be undone.',
+          async () => {
+            if (await apiCall("/api/v1/processes/" + id, "DELETE")) {
+              showToast("Process deleted", "success");
+            }
+          }
+        );
+      }
+
+      // --- Logs ---
+      async function showLogs(id) {
+        currentLogId = id;
+        const panel = document.getElementById("log-panel");
+        const content = document.getElementById("log-content");
+        const title = document.getElementById("log-title");
+        const lines = document.getElementById("log-lines");
+        title.textContent = "Logs: " + id;
+        lines.textContent = "Loading...";
+        panel.classList.add("visible");
+        try {
+          const resp = await fetch("/api/v1/processes/" + id + "/logs");
+          const data = await resp.json();
+          content.textContent = data.logs || "(no logs available)";
+          lines.textContent = data.lines ? data.lines + " lines" : "";
+          content.scrollTop = content.scrollHeight;
+        } catch (e) {
+          content.textContent = "Error loading logs: " + e.message;
+          lines.textContent = "";
+        }
+      }
+
+      async function refreshLogs() {
+        if (!currentLogId) return;
+        showLogs(currentLogId);
+      }
+
+      function copyLogs() {
+        const content = document.getElementById("log-content");
+        navigator.clipboard.writeText(content.textContent).then(() => {
+          showToast("Logs copied to clipboard", "success");
+        }).catch(() => {
+          showToast("Failed to copy", "error");
+        });
+      }
+
+      function closeLogs() {
+        document.getElementById("log-panel").classList.remove("visible");
+        currentLogId = null;
+      }
+
+      // --- Init ---
+      connect();
+    </script>
+  </body>
+</html>
