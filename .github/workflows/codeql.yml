@@ -28,10 +28,10 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
-      - uses: github/codeql-action/init@f7a4a7df985d2cfc89dfd3e5fd6bc295c17eab8e # v3
+      - uses: github/codeql-action/init@ce64ddcb0d8d890d2df4a9d1c04ff297367dea2a # v3
         with:
           languages: go
 
-      - uses: github/codeql-action/analyze@f7a4a7df985d2cfc89dfd3e5fd6bc295c17eab8e # v3
+      - uses: github/codeql-action/analyze@ce64ddcb0d8d890d2df4a9d1c04ff297367dea2a # v3
         with:
           category: "/language:go"
