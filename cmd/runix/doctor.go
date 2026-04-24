@@ -43,7 +43,7 @@ func newDoctorCmd() *cobra.Command {
 			var results []doctorCheckResult
 
 			printHeader := func(title string) {
-				fmt.Fprintf(os.Stdout, "\n── %s ──\n", title)
+				_, _ = fmt.Fprintf(os.Stdout, "\n── %s ──\n", title)
 			}
 
 			check := func(name string, fn func() (status, string)) {
@@ -51,15 +51,15 @@ func newDoctorCmd() *cobra.Command {
 				var statusStr string
 				switch s {
 				case statusOK:
-					fmt.Fprintf(os.Stdout, "  [OK]   %-20s %s\n", name, detail)
+					_, _ = fmt.Fprintf(os.Stdout, "  [OK]   %-20s %s\n", name, detail)
 					passed++
 					statusStr = "ok"
 				case statusWarn:
-					fmt.Fprintf(os.Stdout, "  [WARN] %-20s %s\n", name, detail)
+					_, _ = fmt.Fprintf(os.Stdout, "  [WARN] %-20s %s\n", name, detail)
 					warned++
 					statusStr = "warn"
 				case statusFail:
-					fmt.Fprintf(os.Stdout, "  [FAIL] %-20s %s\n", name, detail)
+					_, _ = fmt.Fprintf(os.Stdout, "  [FAIL] %-20s %s\n", name, detail)
 					failed++
 					statusStr = "fail"
 				}
@@ -70,8 +70,8 @@ func newDoctorCmd() *cobra.Command {
 				})
 			}
 
-			fmt.Fprintln(os.Stdout, "Runix Doctor — Environment Diagnostics")
-			fmt.Fprintf(os.Stdout, "Version: %s  OS: %s/%s\n", version.Version, runtime.GOOS, runtime.GOARCH)
+			_, _ = fmt.Fprintln(os.Stdout, "Runix Doctor — Environment Diagnostics")
+			_, _ = fmt.Fprintf(os.Stdout, "Version: %s  OS: %s/%s\n", version.Version, runtime.GOOS, runtime.GOARCH)
 
 			// Runtime checks.
 			printHeader("Runtimes")
@@ -111,16 +111,16 @@ func newDoctorCmd() *cobra.Command {
 			check("Write executable", makeWriteCheck(dataDir()))
 
 			// Summary.
-			fmt.Fprintln(os.Stdout)
+			_, _ = fmt.Fprintln(os.Stdout)
 			total := passed + warned + failed
-			fmt.Fprintf(os.Stdout, "Results: %d/%d passed", passed, total)
+			_, _ = fmt.Fprintf(os.Stdout, "Results: %d/%d passed", passed, total)
 			if warned > 0 {
-				fmt.Fprintf(os.Stdout, ", %d warnings", warned)
+				_, _ = fmt.Fprintf(os.Stdout, ", %d warnings", warned)
 			}
 			if failed > 0 {
-				fmt.Fprintf(os.Stdout, ", %d failures", failed)
+				_, _ = fmt.Fprintf(os.Stdout, ", %d failures", failed)
 			}
-			fmt.Fprintln(os.Stdout)
+			_, _ = fmt.Fprintln(os.Stdout)
 
 			if format == "json" {
 				outputResult("json", doctorResult{
@@ -206,7 +206,7 @@ func makeWriteCheck(dir string) func() (status, string) {
 		if err := os.WriteFile(testFile, []byte("test"), 0o644); err != nil {
 			return statusFail, fmt.Sprintf("cannot write to %s: %v", dir, err)
 		}
-		os.Remove(testFile)
+		_ = os.Remove(testFile)
 		return statusOK, "writable"
 	}
 }

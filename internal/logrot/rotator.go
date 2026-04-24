@@ -3,6 +3,8 @@ package logrot
 import (
 	"fmt"
 	"os"
+
+	"github.com/rs/zerolog/log"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -49,8 +51,7 @@ func (r *Rotator) Write(p []byte) (int, error) {
 
 	if r.maxSize > 0 && r.written+int64(len(p)) >= r.maxSize {
 		if rotErr := r.rotate(); rotErr != nil {
-			// Log rotation failed but still try to write.
-			// Don't lose the log line.
+			log.Warn().Err(rotErr).Str("path", r.path).Msg("log rotation failed")
 		}
 	}
 
@@ -121,7 +122,7 @@ func (r *Rotator) prune() {
 	// Prune by count.
 	if r.maxFiles > 0 && len(rotated) > r.maxFiles {
 		for i := 0; i < len(rotated)-r.maxFiles; i++ {
-			os.Remove(filepath.Join(dir, rotated[i].Name()))
+			_ = os.Remove(filepath.Join(dir, rotated[i].Name()))
 		}
 		rotated = rotated[len(rotated)-r.maxFiles:]
 	}
@@ -135,7 +136,7 @@ func (r *Rotator) prune() {
 				continue
 			}
 			if info.ModTime().Before(cutoff) {
-				os.Remove(filepath.Join(dir, entry.Name()))
+				_ = os.Remove(filepath.Join(dir, entry.Name()))
 			}
 		}
 	}

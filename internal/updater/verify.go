@@ -30,7 +30,7 @@ func verifyChecksum(ctx context.Context, binaryPath, assetName string) error {
 	if err != nil {
 		return fmt.Errorf("downloading checksums: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode == http.StatusNotFound {
 		return fmt.Errorf("checksums file not available")
@@ -88,7 +88,7 @@ func sha256File(path string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	defer f.Close()
+	defer func() { _ = f.Close() }()
 
 	h := sha256.New()
 	if _, err := io.Copy(h, f); err != nil {

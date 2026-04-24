@@ -29,7 +29,7 @@ func newStopCmd() *cobra.Command {
 			}
 
 			if dryRun {
-				fmt.Fprintf(os.Stdout, "[Runix] Dry run: would stop %q\n", target)
+				_, _ = fmt.Fprintf(os.Stdout, "[Runix] Dry run: would stop %q\n", target)
 				return nil
 			}
 
@@ -42,11 +42,11 @@ func newStopCmd() *cobra.Command {
 					Graceful: graceful,
 				})
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
+					_, _ = fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
 				} else if !resp.Success {
 					return fmt.Errorf("daemon error: %s", resp.Error)
 				} else {
-					fmt.Fprintf(os.Stdout, "[Runix] Process stopped\n")
+					_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process stopped\n")
 					showSpeedList()
 					return nil
 				}
@@ -61,14 +61,14 @@ func newStopCmd() *cobra.Command {
 			if target == "all" {
 				procs := sup.List()
 				if len(procs) == 0 {
-					fmt.Fprintln(os.Stdout, "No processes running")
+					_, _ = fmt.Fprintln(os.Stdout, "No processes running")
 					return nil
 				}
 				for _, p := range procs {
 					if err := sup.StopProcess(p.ID, force, timeout); err != nil {
-						fmt.Fprintf(os.Stderr, "Failed to stop %q: %v\n", p.Name, err)
+						_, _ = fmt.Fprintf(os.Stderr, "Failed to stop %q: %v\n", p.Name, err)
 					} else {
-						fmt.Fprintf(os.Stdout, "[Runix] Process %q (id: %d) stopped\n", p.Name, p.NumericID)
+						_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process %q (id: %d) stopped\n", p.Name, p.NumericID)
 					}
 				}
 				showSpeedList()
@@ -87,7 +87,7 @@ func newStopCmd() *cobra.Command {
 				outputResult(format, map[string]any{
 					"name": info.Name, "id": info.NumericID, "status": "stopped",
 				}, func() {
-					fmt.Fprintf(os.Stdout, "[Runix] Process %q (id: %d) stopped\n", info.Name, info.NumericID)
+					_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process %q (id: %d) stopped\n", info.Name, info.NumericID)
 				})
 			}
 			showSpeedList()

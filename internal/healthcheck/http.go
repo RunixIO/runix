@@ -17,7 +17,7 @@ func (c *Checker) checkHTTP(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 400 {
 		return fmt.Errorf("health check returned status %d", resp.StatusCode)

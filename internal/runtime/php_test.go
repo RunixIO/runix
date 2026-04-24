@@ -8,7 +8,9 @@ import (
 
 func TestDetectPHPComposer(t *testing.T) {
 	dir := t.TempDir()
-	os.WriteFile(filepath.Join(dir, "composer.json"), []byte(`{"require":{}}`), 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "composer.json"), []byte(`{"require":{}}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	d := NewDetector()
 	rt, err := d.Detect(dir)
@@ -22,7 +24,9 @@ func TestDetectPHPComposer(t *testing.T) {
 
 func TestDetectPHPArtisan(t *testing.T) {
 	dir := t.TempDir()
-	os.WriteFile(filepath.Join(dir, "artisan"), []byte("#!/usr/bin/env php\n"), 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "artisan"), []byte("#!/usr/bin/env php\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	d := NewDetector()
 	rt, err := d.Detect(dir)
@@ -36,7 +40,9 @@ func TestDetectPHPArtisan(t *testing.T) {
 
 func TestDetectPHPFile(t *testing.T) {
 	dir := t.TempDir()
-	os.WriteFile(filepath.Join(dir, "app.php"), []byte("<?php echo 'hello';\n"), 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "app.php"), []byte("<?php echo 'hello';\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	d := NewDetector()
 	rt, err := d.Detect(dir)

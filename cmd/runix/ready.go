@@ -31,7 +31,7 @@ func newReadyCmd() *cobra.Command {
 						var info types.ProcessInfo
 						if err := json.Unmarshal(resp.Data, &info); err == nil {
 							if info.Ready {
-								fmt.Fprintf(os.Stdout, "[Runix] Process %q is ready\n", info.Name)
+								_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process %q is ready\n", info.Name)
 								return nil
 							}
 							if info.State == types.StateStopped || info.State == types.StateCrashed || info.State == types.StateErrored {
@@ -55,7 +55,7 @@ func newReadyCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			fmt.Fprintf(os.Stdout, "[Runix] Process %q is ready\n", proc.Info().Name)
+			_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process %q is ready\n", proc.Info().Name)
 			return nil
 		},
 	}

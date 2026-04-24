@@ -31,9 +31,9 @@ func newWatchCmd() *cobra.Command {
 					Target: target,
 				})
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
+					_, _ = fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
 				} else if resp.Success {
-					fmt.Fprintf(os.Stdout, "[Runix] Watching process %q (via daemon)\n", target)
+					_, _ = fmt.Fprintf(os.Stdout, "[Runix] Watching process %q (via daemon)\n", target)
 					return nil
 				}
 			}
@@ -75,13 +75,13 @@ func newWatchCmd() *cobra.Command {
 			// Handler restarts the process on file changes.
 			handler := func(changedPaths []string) {
 				for _, p := range changedPaths {
-					fmt.Fprintf(os.Stderr, "[Runix] File changed: %s\n", p)
+					_, _ = fmt.Fprintf(os.Stderr, "[Runix] File changed: %s\n", p)
 				}
 				ctx := cmd.Context()
 				if err := sup.RestartProcess(ctx, info.ID); err != nil {
-					fmt.Fprintf(os.Stderr, "[Runix] Restart failed: %v\n", err)
+					_, _ = fmt.Fprintf(os.Stderr, "[Runix] Restart failed: %v\n", err)
 				} else {
-					fmt.Fprintf(os.Stdout, "[Runix] Process %q restarted\n", info.Name)
+					_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process %q restarted\n", info.Name)
 				}
 			}
 
@@ -89,7 +89,7 @@ func newWatchCmd() *cobra.Command {
 				return fmt.Errorf("failed to start watcher: %w", err)
 			}
 
-			fmt.Fprintf(os.Stdout, "[Runix] Watching %v for process %q (Ctrl+C to stop)\n", watchPaths, info.Name)
+			_, _ = fmt.Fprintf(os.Stdout, "[Runix] Watching %v for process %q (Ctrl+C to stop)\n", watchPaths, info.Name)
 
 			// Block until interrupted.
 			select {}

@@ -24,17 +24,17 @@ func newDaemonCmd() *cobra.Command {
 		Short: "Start the Runix daemon",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if daemonIsRunning() {
-				fmt.Fprintln(os.Stdout, "[Runix] Daemon is already running")
+				_, _ = fmt.Fprintln(os.Stdout, "[Runix] Daemon is already running")
 				return nil
 			}
 			if cfgFile != "" {
-				os.Setenv("RUNIX_CONFIG", cfgFile)
+				_ = os.Setenv("RUNIX_CONFIG", cfgFile)
 			}
 			if err := daemon.StartDaemon(); err != nil {
-				fmt.Fprintf(os.Stderr, "[Runix] Failed to start daemon: %v\n", err)
+				_, _ = fmt.Fprintf(os.Stderr, "[Runix] Failed to start daemon: %v\n", err)
 				return err
 			}
-			fmt.Fprintln(os.Stdout, "[Runix] Daemon started")
+			_, _ = fmt.Fprintln(os.Stdout, "[Runix] Daemon started")
 			return nil
 		},
 	})
@@ -46,7 +46,7 @@ func newDaemonCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			client := daemonClient()
 			if !client.IsAlive() {
-				fmt.Fprintln(os.Stdout, "[Runix] Daemon is not running")
+				_, _ = fmt.Fprintln(os.Stdout, "[Runix] Daemon is not running")
 				return nil
 			}
 
@@ -56,7 +56,7 @@ func newDaemonCmd() *cobra.Command {
 				proc, err := os.FindProcess(pid)
 				if err == nil {
 					if err := proc.Signal(syscall.SIGTERM); err != nil {
-						fmt.Fprintf(os.Stderr, "[Runix] Failed to stop daemon: %v\n", err)
+						_, _ = fmt.Fprintf(os.Stderr, "[Runix] Failed to stop daemon: %v\n", err)
 						return err
 					}
 				}
@@ -66,12 +66,12 @@ func newDaemonCmd() *cobra.Command {
 			deadline := time.Now().Add(10 * time.Second)
 			for time.Now().Before(deadline) {
 				if !client.IsAlive() {
-					fmt.Fprintln(os.Stdout, "[Runix] Daemon stopped")
+					_, _ = fmt.Fprintln(os.Stdout, "[Runix] Daemon stopped")
 					return nil
 				}
 				time.Sleep(200 * time.Millisecond)
 			}
-			fmt.Fprintf(os.Stderr, "[Runix] Timed out waiting for daemon to stop\n")
+			_, _ = fmt.Fprintf(os.Stderr, "[Runix] Timed out waiting for daemon to stop\n")
 			return fmt.Errorf("timed out waiting for daemon to stop")
 		},
 	})
@@ -86,9 +86,9 @@ func newDaemonCmd() *cobra.Command {
 				pidFile := daemon.NewPIDFile(daemon.DefaultDataDir())
 				pid, _ := pidFile.Read()
 				socket := daemon.DefaultSocketPath()
-				fmt.Fprintf(os.Stdout, "[Runix] Daemon is running (pid: %d, socket: %s)\n", pid, socket)
+				_, _ = fmt.Fprintf(os.Stdout, "[Runix] Daemon is running (pid: %d, socket: %s)\n", pid, socket)
 			} else {
-				fmt.Fprintln(os.Stdout, "[Runix] Daemon is not running")
+				_, _ = fmt.Fprintln(os.Stdout, "[Runix] Daemon is not running")
 			}
 			return nil
 		},
@@ -120,13 +120,13 @@ func newDaemonCmd() *cobra.Command {
 			}
 
 			if cfgFile != "" {
-				os.Setenv("RUNIX_CONFIG", cfgFile)
+				_ = os.Setenv("RUNIX_CONFIG", cfgFile)
 			}
 			if err := daemon.StartDaemon(); err != nil {
-				fmt.Fprintf(os.Stderr, "[Runix] Failed to start daemon: %v\n", err)
+				_, _ = fmt.Fprintf(os.Stderr, "[Runix] Failed to start daemon: %v\n", err)
 				return err
 			}
-			fmt.Fprintln(os.Stdout, "[Runix] Daemon restarted")
+			_, _ = fmt.Fprintln(os.Stdout, "[Runix] Daemon restarted")
 			return nil
 		},
 	})
@@ -137,7 +137,7 @@ func newDaemonCmd() *cobra.Command {
 		Short: "Reload daemon config without stopping processes",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if !daemonIsRunning() {
-				fmt.Fprintln(os.Stderr, "[Runix] Daemon is not running")
+				_, _ = fmt.Fprintln(os.Stderr, "[Runix] Daemon is not running")
 				return fmt.Errorf("daemon not running")
 			}
 
@@ -152,14 +152,14 @@ func newDaemonCmd() *cobra.Command {
 				ConfigPath: configPath,
 			})
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "[Runix] Failed to reload config: %v\n", err)
+				_, _ = fmt.Fprintf(os.Stderr, "[Runix] Failed to reload config: %v\n", err)
 				return err
 			}
 			if !resp.Success {
-				fmt.Fprintf(os.Stderr, "[Runix] Failed to reload config: %s\n", resp.Error)
+				_, _ = fmt.Fprintf(os.Stderr, "[Runix] Failed to reload config: %s\n", resp.Error)
 				return fmt.Errorf("config reload failed: %s", resp.Error)
 			}
-			fmt.Fprintln(os.Stdout, "[Runix] Config reloaded")
+			_, _ = fmt.Fprintln(os.Stdout, "[Runix] Config reloaded")
 			return nil
 		},
 	})

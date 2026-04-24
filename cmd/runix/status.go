@@ -27,7 +27,7 @@ func newStatusCmd() *cobra.Command {
 					Target: target,
 				})
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
+					_, _ = fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
 				} else if resp.Success {
 					var info types.ProcessInfo
 					if err := json.Unmarshal(resp.Data, &info); err == nil {
@@ -100,7 +100,7 @@ func printProcessStatus(info types.ProcessInfo, format string) error {
 		if info.LastReason != "" {
 			kv.Add("Last Reason", info.LastReason)
 		}
-		fmt.Fprint(os.Stdout, kv.Render())
+		_, _ = fmt.Fprint(os.Stdout, kv.Render())
 	}
 	return nil
 }

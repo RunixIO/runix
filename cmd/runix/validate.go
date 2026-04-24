@@ -51,13 +51,13 @@ func newValidateCmd() *cobra.Command {
 			log.Info().Str("file", configPath).Msg("validating config")
 
 			if err := cfg.Validate(); err != nil {
-				fmt.Fprintf(os.Stderr, "Validation failed: %v\n", err)
+				_, _ = fmt.Fprintf(os.Stderr, "Validation failed: %v\n", err)
 				return fmt.Errorf("config validation failed")
 			}
 
 			procs := len(cfg.Processes)
 			crons := len(cfg.Cron)
-			fmt.Fprintf(os.Stdout, "Configuration valid: %d process(es), %d cron job(s)\n", procs, crons)
+			_, _ = fmt.Fprintf(os.Stdout, "Configuration valid: %d process(es), %d cron job(s)\n", procs, crons)
 			return nil
 		},
 	}

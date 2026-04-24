@@ -111,7 +111,9 @@ func TestSchedulerRemove(t *testing.T) {
 		Enabled:  true,
 	}
 
-	s.AddJob(cfg)
+	if err := s.AddJob(cfg); err != nil {
+		t.Fatalf("failed to add job: %v", err)
+	}
 
 	if err := s.RemoveJob("removable"); err != nil {
 		t.Fatalf("failed to remove job: %v", err)
@@ -134,7 +136,9 @@ func TestSchedulerRunJob(t *testing.T) {
 		Enabled:  true,
 	}
 
-	s.AddJob(cfg)
+	if err := s.AddJob(cfg); err != nil {
+		t.Fatalf("failed to add job: %v", err)
+	}
 
 	if err := s.RunJob("manual-job"); err != nil {
 		t.Fatalf("failed to run job: %v", err)

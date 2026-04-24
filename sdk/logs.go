@@ -43,13 +43,13 @@ func (m *Manager) Logs(ctx context.Context, id string, opts LogOptions) (io.Read
 	r, w := io.Pipe()
 
 	go func() {
-		defer w.Close()
+		defer func() { _ = w.Close() }()
 
 		f, err := os.Open(logPath)
 		if err != nil {
 			return
 		}
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 
 		// Tail: read and output the last N lines.
 		if opts.Tail > 0 {

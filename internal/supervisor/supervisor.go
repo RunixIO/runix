@@ -905,7 +905,7 @@ func (s *Supervisor) setupLogWriters(proc *ManagedProcess) error {
 	stderrPath := filepath.Join(appDir, "stderr.log")
 	stderrF, err := os.OpenFile(stderrPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
 	if err != nil {
-		stdoutF.Close()
+		_ = stdoutF.Close()
 		return fmt.Errorf("failed to open stderr log: %w", err)
 	}
 
@@ -938,7 +938,7 @@ func (pw *prefixWriter) Write(p []byte) (int, error) {
 	// Force-flush if the buffer exceeds the line limit.
 	if len(pw.buf) > maxLineBuffer {
 		ts := time.Now().Format("2006-01-02 15:04:05")
-		fmt.Fprintf(pw.writer, "%s %s %s\n", ts, pw.prefix, pw.buf)
+		_, _ = fmt.Fprintf(pw.writer, "%s %s %s\n", ts, pw.prefix, pw.buf)
 		pw.buf = nil // allow GC to reclaim the oversized slice
 		return n, nil
 	}
@@ -952,7 +952,7 @@ func (pw *prefixWriter) Write(p []byte) (int, error) {
 		pw.buf = pw.buf[idx+1:]
 
 		ts := time.Now().Format("2006-01-02 15:04:05")
-		fmt.Fprintf(pw.writer, "%s %s %s\n", ts, pw.prefix, line)
+		_, _ = fmt.Fprintf(pw.writer, "%s %s %s\n", ts, pw.prefix, line)
 	}
 
 	return n, nil

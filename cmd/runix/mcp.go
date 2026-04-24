@@ -109,6 +109,6 @@ func runMCPServer(transportOverride, listenOverride string) error {
 		return fmt.Errorf("MCP server error: %w", err)
 	}
 
-	sup.Shutdown()
+	_ = sup.Shutdown()
 	return nil
 }

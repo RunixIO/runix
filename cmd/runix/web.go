@@ -26,7 +26,7 @@ func newWebCmd() *cobra.Command {
 			// Ensure the daemon is running (auto-starts if needed).
 			client, err := ensureDaemon()
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "[Runix] Failed to start daemon: %v\n", err)
+				_, _ = fmt.Fprintf(os.Stderr, "[Runix] Failed to start daemon: %v\n", err)
 				return err
 			}
 
@@ -35,11 +35,11 @@ func newWebCmd() *cobra.Command {
 				Listen: listen,
 			})
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "[Runix] Failed to start web server: %v\n", err)
+				_, _ = fmt.Fprintf(os.Stderr, "[Runix] Failed to start web server: %v\n", err)
 				return err
 			}
 			if !resp.Success {
-				fmt.Fprintf(os.Stderr, "[Runix] Failed to start web server: %s\n", resp.Error)
+				_, _ = fmt.Fprintf(os.Stderr, "[Runix] Failed to start web server: %s\n", resp.Error)
 				return fmt.Errorf("web start failed: %s", resp.Error)
 			}
 
@@ -55,9 +55,9 @@ func newWebCmd() *cobra.Command {
 			url := "http://" + result.Addr
 
 			if result.Status == "already_running" {
-				fmt.Fprintf(cmd.OutOrStdout(), "[Runix] Web UI already running at %s\n", url)
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[Runix] Web UI already running at %s\n", url)
 			} else {
-				fmt.Fprintf(cmd.OutOrStdout(), "[Runix] Web UI listening on %s\n", url)
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[Runix] Web UI listening on %s\n", url)
 			}
 
 			if open {
@@ -65,11 +65,11 @@ func newWebCmd() *cobra.Command {
 			}
 
 			// Block until Ctrl+C so the user can see the URL.
-			fmt.Fprintln(cmd.OutOrStdout(), "Press Ctrl+C to exit (web server will keep running in daemon)")
+			_, _ = fmt.Fprintln(cmd.OutOrStdout(), "Press Ctrl+C to exit (web server will keep running in daemon)")
 			sigCh := make(chan os.Signal, 1)
 			signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 			<-sigCh
-			fmt.Fprintln(cmd.OutOrStdout(), "\n[Runix] Exiting (web server still running in daemon)")
+			_, _ = fmt.Fprintln(cmd.OutOrStdout(), "\n[Runix] Exiting (web server still running in daemon)")
 
 			_ = client
 			return nil

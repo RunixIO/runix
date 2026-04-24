@@ -29,7 +29,7 @@ func newFlushCmd() *cobra.Command {
 				if err := flushLogs(appDir); err != nil {
 					return err
 				}
-				fmt.Fprintf(os.Stdout, "[Runix] Logs flushed for %q\n", args[0])
+				_, _ = fmt.Fprintf(os.Stdout, "[Runix] Logs flushed for %q\n", args[0])
 				return nil
 			}
 
@@ -37,7 +37,7 @@ func newFlushCmd() *cobra.Command {
 			entries, err := os.ReadDir(appsDir)
 			if err != nil {
 				if os.IsNotExist(err) {
-					fmt.Fprintln(os.Stdout, "No apps found")
+					_, _ = fmt.Fprintln(os.Stdout, "No apps found")
 					return nil
 				}
 				return fmt.Errorf("failed to read apps directory: %w", err)
@@ -50,12 +50,12 @@ func newFlushCmd() *cobra.Command {
 				}
 				appDir := filepath.Join(appsDir, entry.Name())
 				if err := flushLogs(appDir); err != nil {
-					fmt.Fprintf(os.Stderr, "Failed to flush %q: %v\n", entry.Name(), err)
+					_, _ = fmt.Fprintf(os.Stderr, "Failed to flush %q: %v\n", entry.Name(), err)
 				} else {
 					count++
 				}
 			}
-			fmt.Fprintf(os.Stdout, "[Runix] Logs flushed for %d app(s)\n", count)
+			_, _ = fmt.Fprintf(os.Stdout, "[Runix] Logs flushed for %d app(s)\n", count)
 			return nil
 		},
 	}
@@ -76,7 +76,7 @@ func flushLogs(appDir string) error {
 		if err != nil {
 			return fmt.Errorf("failed to truncate %s: %w", logFile, err)
 		}
-		f.Close()
+		_ = f.Close()
 	}
 	return nil
 }

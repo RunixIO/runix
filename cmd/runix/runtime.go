@@ -52,7 +52,7 @@ func newRuntimeCmd() *cobra.Command {
 				MetricsCollector: col,
 				MetricsInterval:  metricsInterval,
 			})
-			defer sup.Shutdown()
+			defer func() { _ = sup.Shutdown() }()
 
 			for _, procCfg := range toStart {
 				proc, err := sup.AddProcess(context.Background(), procCfg)
@@ -60,10 +60,10 @@ func newRuntimeCmd() *cobra.Command {
 					return fmt.Errorf("failed to start process %q: %w", procCfg.Name, err)
 				}
 				info := proc.Info()
-				fmt.Fprintf(cmd.OutOrStdout(), "[Runix] Process %q started (id: %d, pid: %d)\n", info.Name, info.NumericID, info.PID)
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[Runix] Process %q started (id: %d, pid: %d)\n", info.Name, info.NumericID, info.PID)
 			}
 
-			fmt.Fprintln(cmd.OutOrStdout(), "[Runix] Runtime mode active")
+			_, _ = fmt.Fprintln(cmd.OutOrStdout(), "[Runix] Runtime mode active")
 
 			sigCh := make(chan os.Signal, 1)
 			signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
@@ -71,7 +71,7 @@ func newRuntimeCmd() *cobra.Command {
 
 			sig := <-sigCh
 			log.Info().Str("signal", sig.String()).Msg("received shutdown signal")
-			fmt.Fprintf(cmd.OutOrStdout(), "[Runix] Shutting down on %s\n", sig.String())
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "[Runix] Shutting down on %s\n", sig.String())
 
 			return nil
 		},

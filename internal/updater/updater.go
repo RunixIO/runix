@@ -60,7 +60,7 @@ func CheckForUpdate(ctx context.Context) (*CheckResult, error) {
 	if err != nil {
 		return nil, fmt.Errorf("checking for updates: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
@@ -125,13 +125,13 @@ func SelfUpdate(ctx context.Context, targetVersion string) error {
 		return fmt.Errorf("creating temp file: %w", err)
 	}
 	tmpPath := tmpFile.Name()
-	defer os.Remove(tmpPath)
+	defer func() { _ = os.Remove(tmpPath) }()
 
 	if err := downloadFile(ctx, tmpFile, downloadURL, assetSize); err != nil {
-		tmpFile.Close()
+		_ = tmpFile.Close()
 		return fmt.Errorf("downloading: %w", err)
 	}
-	tmpFile.Close()
+	_ = tmpFile.Close()
 
 	// Verify checksum if available.
 	if targetVersion == "" {
@@ -151,7 +151,7 @@ func SelfUpdate(ctx context.Context, targetVersion string) error {
 		if err := copyFile(tmpPath, exePath); err != nil {
 			return fmt.Errorf("replacing binary: %w", err)
 		}
-		os.Remove(tmpPath)
+		_ = os.Remove(tmpPath)
 	}
 
 	log.Info().Str("path", exePath).Msg("binary updated successfully")
@@ -171,7 +171,7 @@ func findLatestAsset(ctx context.Context, assetName string) (string, int64, erro
 	if err != nil {
 		return "", 0, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var release Release
 	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
@@ -199,7 +199,7 @@ func downloadFile(ctx context.Context, dst *os.File, url string, expectedSize in
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("download returned %d", resp.StatusCode)
@@ -223,13 +223,13 @@ func copyFile(src, dst string) error {
 	if err != nil {
 		return err
 	}
-	defer in.Close()
+	defer func() { _ = in.Close() }()
 
 	out, err := os.OpenFile(dst, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0o755)
 	if err != nil {
 		return err
 	}
-	defer out.Close()
+	defer func() { _ = out.Close() }()
 
 	if _, err := io.Copy(out, in); err != nil {
 		return err

@@ -56,7 +56,7 @@ func TestMetricsCollectorTrackOnAddProcess(t *testing.T) {
 		t.Error("expected PID to be untracked after RemoveProcess")
 	}
 
-	sup.Shutdown()
+	_ = sup.Shutdown()
 	col.Stop()
 }
 
@@ -101,7 +101,7 @@ func TestMetricsCollectorUntrackOnStop(t *testing.T) {
 		t.Error("expected PID to be untracked after RemoveProcess")
 	}
 
-	sup.Shutdown()
+	_ = sup.Shutdown()
 	col.Stop()
 }
 
@@ -163,7 +163,7 @@ func TestMetricsCollectorReTrackOnRestart(t *testing.T) {
 	}
 
 	_ = sup.RemoveProcess(proc.ID)
-	sup.Shutdown()
+	_ = sup.Shutdown()
 	col.Stop()
 }
 
@@ -190,7 +190,7 @@ func TestMetricsCollectorNilIsSafe(t *testing.T) {
 	_ = sup.StopProcess(proc.ID, true, 5*time.Second)
 	_ = sup.RemoveProcess(proc.ID)
 
-	sup.Shutdown()
+	_ = sup.Shutdown()
 }
 
 func TestInfoReturnsMetricsAfterCollection(t *testing.T) {
@@ -246,7 +246,7 @@ func TestInfoReturnsMetricsAfterCollection(t *testing.T) {
 	}
 
 	_ = sup.RemoveProcess(proc.ID)
-	sup.Shutdown()
+	_ = sup.Shutdown()
 	col.Stop()
 }
 
@@ -297,7 +297,7 @@ func TestInfoWithStoppedProcessShowsZeros(t *testing.T) {
 	}
 
 	_ = sup.RemoveProcess(proc.ID)
-	sup.Shutdown()
+	_ = sup.Shutdown()
 	col.Stop()
 }
 

@@ -9,7 +9,7 @@ import (
 
 func TestGetGroupResolvesServiceInstances(t *testing.T) {
 	sup := New(Options{})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	for _, name := range []string{"api:0", "api:1"} {
 		_, err := sup.AddProcess(context.Background(), types.ProcessConfig{
@@ -38,7 +38,7 @@ func TestGetGroupResolvesServiceInstances(t *testing.T) {
 
 func TestGetGroupPrefersExactProcessName(t *testing.T) {
 	sup := New(Options{})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	for _, name := range []string{"api", "api:0", "api:1"} {
 		_, err := sup.AddProcess(context.Background(), types.ProcessConfig{

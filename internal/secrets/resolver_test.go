@@ -10,8 +10,10 @@ import (
 )
 
 func TestResolveEnv(t *testing.T) {
-	os.Setenv("TEST_SECRET_VAL", "mysecret")
-	defer os.Unsetenv("TEST_SECRET_VAL")
+	if err := os.Setenv("TEST_SECRET_VAL", "mysecret"); err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = os.Unsetenv("TEST_SECRET_VAL") }()
 
 	cfg := map[string]types.SecretRef{
 		"db_password": {Type: "env", Value: "TEST_SECRET_VAL"},
@@ -40,9 +42,11 @@ func TestResolveFile(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer os.Remove(f.Name())
-	f.WriteString("file_secret_value\n")
-	f.Close()
+	defer func() { _ = os.Remove(f.Name()) }()
+	if _, err := f.WriteString("file_secret_value\n"); err != nil {
+		t.Fatal(err)
+	}
+	_ = f.Close()
 
 	cfg := map[string]types.SecretRef{
 		"api_key": {Type: "file", Value: f.Name()},

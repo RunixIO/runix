@@ -99,10 +99,10 @@ WantedBy=default.target
 		return fmt.Errorf("writing unit file: %w", err)
 	}
 
-	fmt.Fprintf(os.Stdout, "Installed systemd user service to %s\n", unitPath)
-	fmt.Fprintln(os.Stdout, "Run the following to enable and start:")
-	fmt.Fprintln(os.Stdout, "  systemctl --user daemon-reload")
-	fmt.Fprintln(os.Stdout, "  systemctl --user enable --now runix.service")
+	_, _ = fmt.Fprintf(os.Stdout, "Installed systemd user service to %s\n", unitPath)
+	_, _ = fmt.Fprintln(os.Stdout, "Run the following to enable and start:")
+	_, _ = fmt.Fprintln(os.Stdout, "  systemctl --user daemon-reload")
+	_, _ = fmt.Fprintln(os.Stdout, "  systemctl --user enable --now runix.service")
 	return nil
 }
 
@@ -112,14 +112,14 @@ func uninstallSystemd() error {
 	unitPath := filepath.Join(configDir, unitName)
 
 	if _, err := os.Stat(unitPath); os.IsNotExist(err) {
-		fmt.Fprintln(os.Stdout, "Service not installed.")
+		_, _ = fmt.Fprintln(os.Stdout, "Service not installed.")
 		return nil
 	}
 
-	fmt.Fprintln(os.Stdout, "Run the following to disable and remove:")
-	fmt.Fprintln(os.Stdout, "  systemctl --user disable --now runix.service")
-	fmt.Fprintf(os.Stdout, "  rm %s\n", unitPath)
-	fmt.Fprintln(os.Stdout, "  systemctl --user daemon-reload")
+	_, _ = fmt.Fprintln(os.Stdout, "Run the following to disable and remove:")
+	_, _ = fmt.Fprintln(os.Stdout, "  systemctl --user disable --now runix.service")
+	_, _ = fmt.Fprintf(os.Stdout, "  rm %s\n", unitPath)
+	_, _ = fmt.Fprintln(os.Stdout, "  systemctl --user daemon-reload")
 	return nil
 }
 
@@ -170,9 +170,9 @@ func installLaunchd() error {
 		return fmt.Errorf("writing plist: %w", err)
 	}
 
-	fmt.Fprintf(os.Stdout, "Installed launchd agent to %s\n", plistPath)
-	fmt.Fprintln(os.Stdout, "Run the following to load:")
-	fmt.Fprintf(os.Stdout, "  launchctl load %s\n", plistPath)
+	_, _ = fmt.Fprintf(os.Stdout, "Installed launchd agent to %s\n", plistPath)
+	_, _ = fmt.Fprintln(os.Stdout, "Run the following to load:")
+	_, _ = fmt.Fprintf(os.Stdout, "  launchctl load %s\n", plistPath)
 	return nil
 }
 
@@ -182,12 +182,12 @@ func uninstallLaunchd() error {
 	plistPath := filepath.Join(launchDir, label)
 
 	if _, err := os.Stat(plistPath); os.IsNotExist(err) {
-		fmt.Fprintln(os.Stdout, "Service not installed.")
+		_, _ = fmt.Fprintln(os.Stdout, "Service not installed.")
 		return nil
 	}
 
-	fmt.Fprintln(os.Stdout, "Run the following to unload and remove:")
-	fmt.Fprintf(os.Stdout, "  launchctl unload %s\n", plistPath)
-	fmt.Fprintf(os.Stdout, "  rm %s\n", plistPath)
+	_, _ = fmt.Fprintln(os.Stdout, "Run the following to unload and remove:")
+	_, _ = fmt.Fprintf(os.Stdout, "  launchctl unload %s\n", plistPath)
+	_, _ = fmt.Fprintf(os.Stdout, "  rm %s\n", plistPath)
 	return nil
 }
