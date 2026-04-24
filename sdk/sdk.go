@@ -9,7 +9,6 @@ import (
 
 	"github.com/runixio/runix/internal/metrics"
 	"github.com/runixio/runix/internal/supervisor"
-	"github.com/runixio/runix/pkg/types"
 )
 
 // Manager wraps the Runix supervisor for embedded use. It provides a
@@ -186,9 +185,4 @@ func (m *Manager) LogPath(id string) string {
 // LogPathStderr returns the stderr log file path for a process.
 func (m *Manager) LogPathStderr(id string) string {
 	return m.sup.LogPathStderr(id)
-}
-
-// state converts a string state to types.ProcessState for internal use.
-func state(s string) types.ProcessState {
-	return types.ProcessState(s)
 }

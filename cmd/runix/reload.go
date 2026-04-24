@@ -27,7 +27,7 @@ func newReloadCmd() *cobra.Command {
 			target := args[0]
 
 			if dryRun {
-				fmt.Fprintf(os.Stdout, "[Runix] Dry run: would reload %q\n", target)
+				_, _ = fmt.Fprintf(os.Stdout, "[Runix] Dry run: would reload %q\n", target)
 				return nil
 			}
 
@@ -41,11 +41,11 @@ func newReloadCmd() *cobra.Command {
 						RollbackOnFailure: rollback,
 					})
 					if err != nil {
-						fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
+						_, _ = fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
 					} else if !resp.Success {
 						return fmt.Errorf("daemon error: %s", resp.Error)
 					} else {
-						fmt.Fprintf(os.Stdout, "[Runix] All processes rolling-reloaded\n")
+						_, _ = fmt.Fprintf(os.Stdout, "[Runix] All processes rolling-reloaded\n")
 						return nil
 					}
 				}
@@ -55,7 +55,7 @@ func newReloadCmd() *cobra.Command {
 				if err != nil {
 					return err
 				}
-				names := []string{target}
+				var names []string
 				if target == "all" {
 					procs := sup.List()
 					names = make([]string, len(procs))
@@ -76,7 +76,7 @@ func newReloadCmd() *cobra.Command {
 				if err := sup.RollingReload(context.Background(), names, opts); err != nil {
 					return err
 				}
-				fmt.Fprintf(os.Stdout, "[Runix] All processes rolling-reloaded\n")
+				_, _ = fmt.Fprintf(os.Stdout, "[Runix] All processes rolling-reloaded\n")
 				return nil
 			}
 
@@ -86,11 +86,11 @@ func newReloadCmd() *cobra.Command {
 					Target: target,
 				})
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
+					_, _ = fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
 				} else if !resp.Success {
 					return fmt.Errorf("daemon error: %s", resp.Error)
 				} else {
-					fmt.Fprintf(os.Stdout, "[Runix] Process reloaded\n")
+					_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process reloaded\n")
 					return nil
 				}
 			}
@@ -109,7 +109,7 @@ func newReloadCmd() *cobra.Command {
 					return fmt.Errorf("failed to reload %q: %w", target, err)
 				}
 			}
-			fmt.Fprintf(os.Stdout, "[Runix] Process reloaded\n")
+			_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process reloaded\n")
 			return nil
 		},
 	}

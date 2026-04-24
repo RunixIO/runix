@@ -42,11 +42,11 @@ func newConfigReloadCmd() *cobra.Command {
 			diff := config.DiffConfigs(&oldCfg, &newCfg)
 
 			if diff.String() == "no changes" {
-				fmt.Fprintln(os.Stdout, "[Runix] No configuration changes detected")
+				_, _ = fmt.Fprintln(os.Stdout, "[Runix] No configuration changes detected")
 				return nil
 			}
 
-			fmt.Fprintf(os.Stdout, "[Runix] Configuration changes:\n%s", diff.String())
+			_, _ = fmt.Fprintf(os.Stdout, "[Runix] Configuration changes:\n%s", diff.String())
 
 			// Apply changes via daemon.
 			if daemonIsRunning() {
@@ -57,11 +57,11 @@ func newConfigReloadCmd() *cobra.Command {
 				if !resp.Success {
 					return fmt.Errorf("daemon config reload failed: %s", resp.Error)
 				}
-				fmt.Fprintln(os.Stdout, "[Runix] Configuration reloaded via daemon")
+				_, _ = fmt.Fprintln(os.Stdout, "[Runix] Configuration reloaded via daemon")
 				return nil
 			}
 
-			fmt.Fprintln(os.Stdout, "[Runix] Config reloaded (daemon not running, changes apply on next start)")
+			_, _ = fmt.Fprintln(os.Stdout, "[Runix] Config reloaded (daemon not running, changes apply on next start)")
 			return nil
 		},
 	}

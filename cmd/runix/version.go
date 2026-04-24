@@ -15,11 +15,11 @@ func newVersionCmd() *cobra.Command {
 		Use:   "version",
 		Short: "Print Runix version",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Fprintf(cmd.OutOrStdout(), "Runix %s\n", version.Version)
+			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "Runix %s\n", version.Version)
 			if verbose {
-				fmt.Fprintf(cmd.OutOrStdout(), "  Build:    %s\n", version.BuildTime)
-				fmt.Fprintf(cmd.OutOrStdout(), "  Go:       %s\n", runtime.Version())
-				fmt.Fprintf(cmd.OutOrStdout(), "  OS/Arch:  %s/%s\n", runtime.GOOS, runtime.GOARCH)
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "  Build:    %s\n", version.BuildTime)
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "  Go:       %s\n", runtime.Version())
+				_, _ = fmt.Fprintf(cmd.OutOrStdout(), "  OS/Arch:  %s/%s\n", runtime.GOOS, runtime.GOARCH)
 			}
 			return nil
 		},

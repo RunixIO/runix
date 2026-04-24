@@ -18,13 +18,13 @@ func newSaveCmd() *cobra.Command {
 			if daemonIsRunning() {
 				resp, err := sendIPC(daemon.ActionSave, nil)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
+					_, _ = fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
 				} else if resp.Success {
 					var result struct {
 						Status string `json:"status"`
 					}
 					if err := json.Unmarshal(resp.Data, &result); err == nil {
-						fmt.Fprintln(os.Stdout, "[Runix] Process state saved")
+						_, _ = fmt.Fprintln(os.Stdout, "[Runix] Process state saved")
 						return nil
 					}
 				}
@@ -41,7 +41,7 @@ func newSaveCmd() *cobra.Command {
 			}
 
 			procs := sup.List()
-			fmt.Fprintf(os.Stdout, "[Runix] Saved state for %d process(es)\n", len(procs))
+			_, _ = fmt.Fprintf(os.Stdout, "[Runix] Saved state for %d process(es)\n", len(procs))
 			return nil
 		},
 	}

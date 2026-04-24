@@ -8,7 +8,9 @@ import (
 
 func TestDetectDenoJSON(t *testing.T) {
 	dir := t.TempDir()
-	os.WriteFile(filepath.Join(dir, "deno.json"), []byte(`{"tasks": {"dev": "deno run main.ts"}}`), 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "deno.json"), []byte(`{"tasks": {"dev": "deno run main.ts"}}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	d := NewDetector()
 	rt, err := d.Detect(dir)
@@ -22,7 +24,9 @@ func TestDetectDenoJSON(t *testing.T) {
 
 func TestDetectDenoJSONC(t *testing.T) {
 	dir := t.TempDir()
-	os.WriteFile(filepath.Join(dir, "deno.jsonc"), []byte(`// Deno config\n{"tasks": {}}`), 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "deno.jsonc"), []byte(`// Deno config\n{"tasks": {}}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	d := NewDetector()
 	rt, err := d.Detect(dir)

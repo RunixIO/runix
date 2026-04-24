@@ -17,9 +17,9 @@ func newResurrectCmd() *cobra.Command {
 			if daemonIsRunning() {
 				resp, err := sendIPC(daemon.ActionResurrect, nil)
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
+					_, _ = fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
 				} else if resp.Success {
-					fmt.Fprintln(os.Stdout, "[Runix] Processes resurrected")
+					_, _ = fmt.Fprintln(os.Stdout, "[Runix] Processes resurrected")
 					return nil
 				}
 			}
@@ -35,7 +35,7 @@ func newResurrectCmd() *cobra.Command {
 			}
 
 			procs := sup.List()
-			fmt.Fprintf(os.Stdout, "[Runix] Resurrected %d process(es)\n", len(procs))
+			_, _ = fmt.Fprintf(os.Stdout, "[Runix] Resurrected %d process(es)\n", len(procs))
 			return nil
 		},
 	}

@@ -13,7 +13,7 @@ func TestStartConfigProcessesExpandsInstances(t *testing.T) {
 	sup := supervisor.New(supervisor.Options{
 		LogDir: filepath.Join(t.TempDir(), "logs"),
 	})
-	defer sup.Shutdown()
+	defer func() { _ = sup.Shutdown() }()
 
 	startConfigProcesses(sup, &types.RunixConfig{
 		Processes: []types.ProcessConfig{

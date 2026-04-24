@@ -24,7 +24,7 @@ func (s *MCPServer) serveStdio(ctx context.Context) error {
 		return err
 	case <-ctx.Done():
 		// Close stdin to unblock ServeStdio's read loop.
-		os.Stdin.Close()
+		_ = os.Stdin.Close()
 		return <-done
 	}
 }

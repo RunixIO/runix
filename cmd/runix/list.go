@@ -29,7 +29,7 @@ func newListCmd() *cobra.Command {
 			// Try daemon IPC first (auto-starts daemon if needed).
 			resp, err := sendIPC(daemon.ActionList, nil)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
+				_, _ = fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
 			} else if resp.Success {
 				var procs []types.ProcessInfo
 				if err := json.Unmarshal(resp.Data, &procs); err == nil {
@@ -68,7 +68,7 @@ func printProcessList(procs []types.ProcessInfo, format string) error {
 		return enc.Encode(procs)
 	case "yaml":
 		for _, p := range procs {
-			fmt.Fprintf(os.Stdout, "- id: %d\n  name: %s\n  runtime: %s\n  state: %s\n  ready: %t\n  pid: %d\n  restarts: %d\n  uptime: %s\n  cpu: %.1f\n  memory: %s\n",
+			_, _ = fmt.Fprintf(os.Stdout, "- id: %d\n  name: %s\n  runtime: %s\n  state: %s\n  ready: %t\n  pid: %d\n  restarts: %d\n  uptime: %s\n  cpu: %.1f\n  memory: %s\n",
 				p.NumericID, p.Name, p.Runtime, p.State, p.Ready, p.PID, p.Restarts, p.UptimeString(), p.CPUPercent, output.FormatBytes(p.MemBytes))
 		}
 	default:
@@ -110,7 +110,7 @@ func printProcessTable(procs []types.ProcessInfo) {
 			output.Sprintf("%d", p.Restarts),
 		)
 	}
-	fmt.Fprint(os.Stdout, tbl.Render())
+	_, _ = fmt.Fprint(os.Stdout, tbl.Render())
 }
 
 func filterProcesses(procs []types.ProcessInfo, filter string, namespace string, runtime_ string, tag string) []types.ProcessInfo {

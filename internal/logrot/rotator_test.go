@@ -16,7 +16,7 @@ func TestNewRotator(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer r.Close()
+	defer func() { _ = r.Close() }()
 
 	if _, err := r.Write([]byte("hello\n")); err != nil {
 		t.Fatal(err)
@@ -40,11 +40,13 @@ func TestRotationTrigger(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer r.Close()
+	defer func() { _ = r.Close() }()
 
 	// Write enough to trigger rotation.
 	for i := 0; i < 20; i++ {
-		r.Write([]byte("hello world\n"))
+		if _, err := r.Write([]byte("hello world\n")); err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	// Should have rotated files.
@@ -69,11 +71,13 @@ func TestMaxFiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer r.Close()
+	defer func() { _ = r.Close() }()
 
 	// Trigger many rotations.
 	for i := 0; i < 50; i++ {
-		r.Write([]byte("data\n"))
+		if _, err := r.Write([]byte("data\n")); err != nil {
+			t.Fatal(err)
+		}
 	}
 
 	entries, _ := os.ReadDir(dir)
@@ -97,11 +101,13 @@ func TestMaxAge(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer r.Close()
+	defer func() { _ = r.Close() }()
 
 	// Trigger rotation.
 	for i := 0; i < 50; i++ {
-		r.Write([]byte("data\n"))
+		if _, err := r.Write([]byte("data\n")); err != nil {
+			t.Fatal(err)
+		}
 		time.Sleep(time.Millisecond)
 	}
 

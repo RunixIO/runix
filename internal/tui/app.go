@@ -38,7 +38,6 @@ type App struct {
 	quitting bool
 
 	procTable   components.ProcessTable
-	logView     components.LogView
 	statusBar   components.StatusBar
 	helpView    components.HelpView
 	logViewport viewport.Model

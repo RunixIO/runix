@@ -15,7 +15,9 @@ import (
 func TestHooksIntegration(t *testing.T) {
 	dir := t.TempDir()
 	logDir := dir + "/logs"
-	os.MkdirAll(logDir, 0o755)
+	if err := os.MkdirAll(logDir, 0o755); err != nil {
+		t.Fatal(err)
+	}
 
 	sup := supervisor.New(supervisor.Options{
 		LogDir: logDir,

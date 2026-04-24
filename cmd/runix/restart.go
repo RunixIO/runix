@@ -26,7 +26,7 @@ func newRestartCmd() *cobra.Command {
 			}
 
 			if dryRun {
-				fmt.Fprintf(os.Stdout, "[Runix] Dry run: would restart %q\n", target)
+				_, _ = fmt.Fprintf(os.Stdout, "[Runix] Dry run: would restart %q\n", target)
 				return nil
 			}
 
@@ -37,11 +37,11 @@ func newRestartCmd() *cobra.Command {
 					Parallel: parallel,
 				})
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
+					_, _ = fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
 				} else if !resp.Success {
 					return fmt.Errorf("daemon error: %s", resp.Error)
 				} else {
-					fmt.Fprintf(os.Stdout, "[Runix] Process restarted\n")
+					_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process restarted\n")
 					showSpeedList()
 					return nil
 				}
@@ -56,7 +56,7 @@ func newRestartCmd() *cobra.Command {
 			if target == "all" {
 				procs := sup.List()
 				if len(procs) == 0 {
-					fmt.Fprintln(os.Stdout, "No processes running")
+					_, _ = fmt.Fprintln(os.Stdout, "No processes running")
 					return nil
 				}
 				if parallel {
@@ -68,11 +68,11 @@ func newRestartCmd() *cobra.Command {
 							defer wg.Done()
 							if err := sup.RestartProcess(context.Background(), id); err != nil {
 								mu.Lock()
-								fmt.Fprintf(os.Stderr, "Failed to restart %q: %v\n", name, err)
+								_, _ = fmt.Fprintf(os.Stderr, "Failed to restart %q: %v\n", name, err)
 								mu.Unlock()
 							} else {
 								mu.Lock()
-								fmt.Fprintf(os.Stdout, "[Runix] Process %q (id: %d) restarted\n", name, numID)
+								_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process %q (id: %d) restarted\n", name, numID)
 								mu.Unlock()
 							}
 						}(p.ID, p.Name, p.NumericID)
@@ -81,9 +81,9 @@ func newRestartCmd() *cobra.Command {
 				} else {
 					for _, p := range procs {
 						if err := sup.RestartProcess(context.Background(), p.ID); err != nil {
-							fmt.Fprintf(os.Stderr, "Failed to restart %q: %v\n", p.Name, err)
+							_, _ = fmt.Fprintf(os.Stderr, "Failed to restart %q: %v\n", p.Name, err)
 						} else {
-							fmt.Fprintf(os.Stdout, "[Runix] Process %q (id: %d) restarted\n", p.Name, p.NumericID)
+							_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process %q (id: %d) restarted\n", p.Name, p.NumericID)
 						}
 					}
 				}
@@ -100,7 +100,7 @@ func newRestartCmd() *cobra.Command {
 				if err := sup.RestartProcess(context.Background(), proc.ID); err != nil {
 					return fmt.Errorf("failed to restart %q: %w", target, err)
 				}
-				fmt.Fprintf(os.Stdout, "[Runix] Process %q (id: %d) restarted\n", info.Name, info.NumericID)
+				_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process %q (id: %d) restarted\n", info.Name, info.NumericID)
 			}
 			showSpeedList()
 			return nil

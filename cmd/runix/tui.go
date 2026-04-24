@@ -16,7 +16,7 @@ func newTUICmd() *cobra.Command {
 		Use:   "tui",
 		Short: "Launch the terminal UI dashboard",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			var lister tui.ProcessLister = &tui.DirectLister{}
+			var lister tui.ProcessLister
 
 			// Try to populate from daemon.
 			if daemonIsRunning() {

@@ -29,14 +29,14 @@ func newDeleteCmd() *cobra.Command {
 					Target: target,
 				})
 				if err != nil {
-					fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
+					_, _ = fmt.Fprintf(os.Stderr, "[Runix] Daemon IPC failed, using direct mode: %v\n", err)
 				} else if !resp.Success {
 					return fmt.Errorf("daemon error: %s", resp.Error)
 				} else {
 					if target == "all" {
-						fmt.Fprintf(os.Stdout, "[Runix] All processes deleted\n")
+						_, _ = fmt.Fprintf(os.Stdout, "[Runix] All processes deleted\n")
 					} else {
-						fmt.Fprintf(os.Stdout, "[Runix] Process deleted\n")
+						_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process deleted\n")
 					}
 					showSpeedList()
 					return nil
@@ -52,14 +52,14 @@ func newDeleteCmd() *cobra.Command {
 			if target == "all" {
 				procs := sup.List()
 				if len(procs) == 0 {
-					fmt.Fprintln(os.Stdout, "No processes to delete")
+					_, _ = fmt.Fprintln(os.Stdout, "No processes to delete")
 					return nil
 				}
 				for _, p := range procs {
 					if err := sup.RemoveProcess(p.ID); err != nil {
-						fmt.Fprintf(os.Stderr, "Failed to delete %q: %v\n", p.Name, err)
+						_, _ = fmt.Fprintf(os.Stderr, "Failed to delete %q: %v\n", p.Name, err)
 					} else {
-						fmt.Fprintf(os.Stdout, "[Runix] Process %q (id: %d) deleted\n", p.Name, p.NumericID)
+						_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process %q (id: %d) deleted\n", p.Name, p.NumericID)
 					}
 				}
 				showSpeedList()
@@ -75,7 +75,7 @@ func newDeleteCmd() *cobra.Command {
 				if err := sup.RemoveProcess(proc.ID); err != nil {
 					return fmt.Errorf("failed to delete %q: %w", target, err)
 				}
-				fmt.Fprintf(os.Stdout, "[Runix] Process %q (id: %d) deleted\n", info.Name, info.NumericID)
+				_, _ = fmt.Fprintf(os.Stdout, "[Runix] Process %q (id: %d) deleted\n", info.Name, info.NumericID)
 			}
 			showSpeedList()
 			return nil

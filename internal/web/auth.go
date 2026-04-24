@@ -75,7 +75,7 @@ func WebAuthMiddleware(sessions *auth.SessionStore) func(http.Handler) http.Hand
 			} else {
 				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusUnauthorized)
-				json.NewEncoder(w).Encode(loginResponse{Error: "authentication required"})
+				_ = json.NewEncoder(w).Encode(loginResponse{Error: "authentication required"})
 			}
 		})
 	}
@@ -238,7 +238,7 @@ func (s *Server) handleLoginPage(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return
 	}
-	w.Write(loginHTML)
+	_, _ = w.Write(loginHTML)
 }
 
 func sanitizeRedirectPath(raw string) string {

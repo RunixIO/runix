@@ -8,7 +8,9 @@ import (
 
 func TestDetectRubyGemfile(t *testing.T) {
 	dir := t.TempDir()
-	os.WriteFile(filepath.Join(dir, "Gemfile"), []byte("source 'https://rubygems.org'\n"), 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "Gemfile"), []byte("source 'https://rubygems.org'\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	d := NewDetector()
 	rt, err := d.Detect(dir)
@@ -22,7 +24,9 @@ func TestDetectRubyGemfile(t *testing.T) {
 
 func TestDetectRubyGemfileLock(t *testing.T) {
 	dir := t.TempDir()
-	os.WriteFile(filepath.Join(dir, "Gemfile.lock"), []byte("GEM\n  remote: https://rubygems.org/\n"), 0o644)
+	if err := os.WriteFile(filepath.Join(dir, "Gemfile.lock"), []byte("GEM\n  remote: https://rubygems.org/\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
 
 	d := NewDetector()
 	rt, err := d.Detect(dir)

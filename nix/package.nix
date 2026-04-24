@@ -8,7 +8,7 @@ buildGoModule {
   pname = "runix";
   inherit version src;
 
-  vendorHash = "sha256-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+  vendorHash = "sha256-eEhTdpZH0PExdlKylWmSKxPnUzPC8mHuoJBp+ys6TFw=";
 
   proxyVendor = true;
 

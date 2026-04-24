@@ -59,7 +59,7 @@ func TestListAppsEmpty(t *testing.T) {
 
 func TestStartApp(t *testing.T) {
 	srv := setupTestMCPServer(t)
-	defer srv.supervisor.Shutdown()
+	defer func() { _ = srv.supervisor.Shutdown() }()
 
 	req := mcp.CallToolRequest{Params: mcp.CallToolParams{
 		Name: "start_app",
@@ -80,7 +80,7 @@ func TestStartApp(t *testing.T) {
 
 func TestStartAppWithEnv(t *testing.T) {
 	srv := setupTestMCPServer(t)
-	defer srv.supervisor.Shutdown()
+	defer func() { _ = srv.supervisor.Shutdown() }()
 
 	req := mcp.CallToolRequest{Params: mcp.CallToolParams{
 		Name: "start_app",
@@ -105,7 +105,7 @@ func TestStartAppWithEnv(t *testing.T) {
 
 func TestStartAndListApps(t *testing.T) {
 	srv := setupTestMCPServer(t)
-	defer srv.supervisor.Shutdown()
+	defer func() { _ = srv.supervisor.Shutdown() }()
 
 	// Start a process.
 	startReq := mcp.CallToolRequest{Params: mcp.CallToolParams{
@@ -146,15 +146,17 @@ func TestStartAndListApps(t *testing.T) {
 
 func TestStopApp(t *testing.T) {
 	srv := setupTestMCPServer(t)
-	defer srv.supervisor.Shutdown()
+	defer func() { _ = srv.supervisor.Shutdown() }()
 
-	srv.supervisor.AddProcess(context.Background(), types.ProcessConfig{
+	if _, err := srv.supervisor.AddProcess(context.Background(), types.ProcessConfig{
 		Name:          "stop-target",
 		Entrypoint:    "sleep",
 		Args:          []string{"60"},
 		Runtime:       "unknown",
 		RestartPolicy: types.RestartNever,
-	})
+	}); err != nil {
+		t.Fatal(err)
+	}
 
 	procs := srv.supervisor.List()
 	if len(procs) == 0 {
@@ -178,15 +180,17 @@ func TestStopApp(t *testing.T) {
 
 func TestRestartApp(t *testing.T) {
 	srv := setupTestMCPServer(t)
-	defer srv.supervisor.Shutdown()
+	defer func() { _ = srv.supervisor.Shutdown() }()
 
-	srv.supervisor.AddProcess(context.Background(), types.ProcessConfig{
+	if _, err := srv.supervisor.AddProcess(context.Background(), types.ProcessConfig{
 		Name:          "restart-target",
 		Entrypoint:    "sleep",
 		Args:          []string{"60"},
 		Runtime:       "unknown",
 		RestartPolicy: types.RestartNever,
-	})
+	}); err != nil {
+		t.Fatal(err)
+	}
 
 	procs := srv.supervisor.List()
 	if len(procs) == 0 {
@@ -210,15 +214,17 @@ func TestRestartApp(t *testing.T) {
 
 func TestReloadApp(t *testing.T) {
 	srv := setupTestMCPServer(t)
-	defer srv.supervisor.Shutdown()
+	defer func() { _ = srv.supervisor.Shutdown() }()
 
-	srv.supervisor.AddProcess(context.Background(), types.ProcessConfig{
+	if _, err := srv.supervisor.AddProcess(context.Background(), types.ProcessConfig{
 		Name:          "reload-target",
 		Entrypoint:    "sleep",
 		Args:          []string{"60"},
 		Runtime:       "unknown",
 		RestartPolicy: types.RestartNever,
-	})
+	}); err != nil {
+		t.Fatal(err)
+	}
 
 	procs := srv.supervisor.List()
 	if len(procs) == 0 {
@@ -242,15 +248,17 @@ func TestReloadApp(t *testing.T) {
 
 func TestDeleteApp(t *testing.T) {
 	srv := setupTestMCPServer(t)
-	defer srv.supervisor.Shutdown()
+	defer func() { _ = srv.supervisor.Shutdown() }()
 
-	srv.supervisor.AddProcess(context.Background(), types.ProcessConfig{
+	if _, err := srv.supervisor.AddProcess(context.Background(), types.ProcessConfig{
 		Name:          "delete-target",
 		Entrypoint:    "sleep",
 		Args:          []string{"60"},
 		Runtime:       "unknown",
 		RestartPolicy: types.RestartNever,
-	})
+	}); err != nil {
+		t.Fatal(err)
+	}
 
 	procs := srv.supervisor.List()
 	if len(procs) == 0 {
@@ -297,15 +305,17 @@ func TestGetStatusNotFound(t *testing.T) {
 
 func TestGetStatus(t *testing.T) {
 	srv := setupTestMCPServer(t)
-	defer srv.supervisor.Shutdown()
+	defer func() { _ = srv.supervisor.Shutdown() }()
 
-	srv.supervisor.AddProcess(context.Background(), types.ProcessConfig{
+	if _, err := srv.supervisor.AddProcess(context.Background(), types.ProcessConfig{
 		Name:          "status-check",
 		Entrypoint:    "sleep",
 		Args:          []string{"60"},
 		Runtime:       "unknown",
 		RestartPolicy: types.RestartNever,
-	})
+	}); err != nil {
+		t.Fatal(err)
+	}
 
 	procs := srv.supervisor.List()
 	if len(procs) == 0 {
@@ -337,15 +347,17 @@ func TestGetStatus(t *testing.T) {
 
 func TestGetLogs(t *testing.T) {
 	srv := setupTestMCPServer(t)
-	defer srv.supervisor.Shutdown()
+	defer func() { _ = srv.supervisor.Shutdown() }()
 
-	srv.supervisor.AddProcess(context.Background(), types.ProcessConfig{
+	if _, err := srv.supervisor.AddProcess(context.Background(), types.ProcessConfig{
 		Name:          "log-check",
 		Entrypoint:    "sleep",
 		Args:          []string{"60"},
 		Runtime:       "unknown",
 		RestartPolicy: types.RestartNever,
-	})
+	}); err != nil {
+		t.Fatal(err)
+	}
 
 	procs := srv.supervisor.List()
 	if len(procs) == 0 {
@@ -370,7 +382,7 @@ func TestGetLogs(t *testing.T) {
 
 func TestSaveAndResurrect(t *testing.T) {
 	srv := setupTestMCPServer(t)
-	defer srv.supervisor.Shutdown()
+	defer func() { _ = srv.supervisor.Shutdown() }()
 
 	saveReq := mcp.CallToolRequest{Params: mcp.CallToolParams{Name: "save_state"}}
 	result, err := srv.handleSaveState(context.Background(), saveReq)
@@ -445,7 +457,7 @@ func TestMissingTargetParam(t *testing.T) {
 
 func TestAppListResource(t *testing.T) {
 	srv := setupTestMCPServer(t)
-	defer srv.supervisor.Shutdown()
+	defer func() { _ = srv.supervisor.Shutdown() }()
 
 	req := mcp.ReadResourceRequest{Params: mcp.ReadResourceParams{URI: "apps://list"}}
 	result, err := srv.handleAppListResource(context.Background(), req)

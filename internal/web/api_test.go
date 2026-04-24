@@ -62,7 +62,7 @@ func TestGetProcessNotFound(t *testing.T) {
 
 func TestStartAndListProcess(t *testing.T) {
 	srv := setupTestServer(t)
-	defer srv.supervisor.Shutdown()
+	defer func() { _ = srv.supervisor.Shutdown() }()
 
 	body := `{"name":"test-sleep","entrypoint":"sleep","args":["60"],"runtime":"unknown"}`
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/processes", strings.NewReader(body))
@@ -85,7 +85,9 @@ func TestStartAndListProcess(t *testing.T) {
 	w2 := httptest.NewRecorder()
 	srv.handleListProcesses(w2, req2)
 	var procs []types.ProcessInfo
-	json.NewDecoder(w2.Body).Decode(&procs)
+	if err := json.NewDecoder(w2.Body).Decode(&procs); err != nil {
+		t.Fatalf("failed to decode: %v", err)
+	}
 	if len(procs) != 1 {
 		t.Errorf("expected 1 process, got %d", len(procs))
 	}
@@ -93,15 +95,17 @@ func TestStartAndListProcess(t *testing.T) {
 
 func TestStopProcess(t *testing.T) {
 	srv := setupTestServer(t)
-	defer srv.supervisor.Shutdown()
+	defer func() { _ = srv.supervisor.Shutdown() }()
 
-	srv.supervisor.AddProcess(context.Background(), types.ProcessConfig{
+	if _, err := srv.supervisor.AddProcess(context.Background(), types.ProcessConfig{
 		Name:          "stop-test",
 		Entrypoint:    "sleep",
 		Args:          []string{"60"},
 		Runtime:       "unknown",
 		RestartPolicy: types.RestartNever,
-	})
+	}); err != nil {
+		t.Fatal(err)
+	}
 	time.Sleep(100 * time.Millisecond)
 
 	procs := srv.supervisor.List()
