@@ -1,0 +1,224 @@
+# Runix Configuration Example
+# See documentation for full reference.
+#
+# Data directory: ~/.runix/ (default)
+# Override with: --data-dir /path/to/dir or daemon.data_dir below.
+
+daemon:
+  data_dir: "~/.runix"
+  socket_path: "~/.runix/tmp/runix.sock"
+  log_level: "info"
+
+defaults:
+  restart_policy: "on-failure"
+  max_restarts: 10
+  backoff_base: "1s"
+  backoff_max: "60s"
+  log_max_size: "10MB"
+  log_max_age: "7d"
+
+# Secrets can be referenced by processes via environment variables.
+# Supported types: env, file, vault.
+# Vault resolution uses VAULT_ADDR and VAULT_TOKEN from the environment.
+# Value format: <path>#<key>, for example secret/myapp#password.
+secrets:
+  db_password:
+    type: env
+    value: "DB_PASSWORD"
+  api_key:
+    type: file
+    value: "/run/secrets/api_key"
+  vault_password:
+    type: vault
+    value: "secret/myapp#password"
+
+# Profiles provide per-environment overrides for process env vars.
+# Activate with: --profile <name>
+profiles:
+  staging:
+    api:
+      PORT: "8081"
+      LOG_LEVEL: "debug"
+  production:
+    api:
+      LOG_LEVEL: "warn"
+
+processes:
+  - name: "api"
+    namespace: "backend"
+    runtime: "go"
+    entrypoint: "./cmd/api"
+    args: ["--port", "8080"]
+    cwd: "."
+    instances: 2
+    tags: ["backend", "http"]
+    priority: 10
+    depends_on: ["db"]
+    env:
+      PORT: "8080"
+      HOST: "0.0.0.0"
+    restart_policy: "always"
+    max_restarts: 5
+    stop_signal: "SIGTERM"
+    stop_timeout: "10s"
+    cpu_quota: "50%"
+    memory_limit: "512MB"
+    log_max_size: "50MB"
+    log_max_files: 10
+    healthcheck:
+      type: http
+      url: "http://localhost:8080/health"
+      interval: "10s"
+      timeout: "5s"
+      retries: 3
+      grace_period: "30s"
+    hooks:
+      pre_start:
+        command: "make build"
+        timeout: "30s"
+      post_start:
+        command: "curl -sf http://localhost:8080/health || true"
+        timeout: "5s"
+        ignore_failure: true
+      pre_stop:
+        command: "echo 'Draining connections'"
+      post_stop:
+        command: "make clean"
+      pre_healthcheck:
+        command: "echo 'Checking health'"
+        ignore_failure: true
+      post_healthcheck:
+        command: "echo 'Health check done'"
+        ignore_failure: true
+
+  - name: "worker"
+    namespace: "backend"
+    runtime: "python"
+    entrypoint: "worker.py"
+    cwd: "./worker"
+    tags: ["backend", "jobs"]
+    priority: 20
+    depends_on: ["api"]
+    restart_policy: "on-failure"
+    healthcheck:
+      type: command
+      command: "test -f /tmp/worker healthy"
+      interval: "30s"
+      timeout: "5s"
+      retries: 2
+    hooks:
+      pre_start:
+        command: "pip install -q -r requirements.txt"
+        timeout: "30s"
+        ignore_failure: true
+
+  - name: "frontend"
+    runtime: "bun"
+    entrypoint: "dev"
+    cwd: "./web"
+    tags: ["frontend", "dev"]
+    priority: 30
+    watch:
+      enabled: true
+      paths: ["./src", "./pages"]
+      ignore: ["node_modules/", ".next/"]
+      debounce: "100ms"
+    hooks:
+      pre_start:
+        command: "bun install"
+        timeout: "60s"
+
+  - name: "deno-api"
+    runtime: "deno"
+    entrypoint: "main.ts"
+    args: ["--allow-net", "--allow-env", "--allow-read"]
+    cwd: "./deno-api"
+    tags: ["backend", "deno"]
+    restart_policy: "on-failure"
+    watch:
+      enabled: true
+      paths: ["./src"]
+      ignore: ["node_modules/"]
+      debounce: "200ms"
+
+  - name: "rails-api"
+    runtime: "ruby"
+    entrypoint: "config.ru"
+    use_bundle: true
+    args: ["-p", "3000", "-o", "0.0.0.0"]
+    cwd: "./rails-api"
+    tags: ["backend", "ruby", "rails"]
+    restart_policy: "on-failure"
+    env:
+      RAILS_ENV: "development"
+    watch:
+      enabled: true
+      paths: ["./app", "./config", "./lib"]
+      ignore: ["tmp/", "log/", "node_modules/"]
+      debounce: "200ms"
+
+  - name: "ruby-worker"
+    runtime: "ruby"
+    entrypoint: "worker.rb"
+    cwd: "./worker"
+    tags: ["backend", "ruby"]
+
+  - name: "laravel-api"
+    runtime: "php"
+    entrypoint: "artisan"
+    args: ["serve", "--host=0.0.0.0", "--port=8000"]
+    cwd: "./laravel-api"
+    tags: ["backend", "php", "laravel"]
+    env:
+      APP_ENV: "development"
+    watch:
+      enabled: true
+      paths: ["./app", "./routes", "./config"]
+      ignore: ["storage/", "vendor/"]
+      debounce: "200ms"
+
+  - name: "php-worker"
+    runtime: "php"
+    entrypoint: "artisan"
+    args: ["queue:work"]
+    cwd: "./laravel-api"
+    tags: ["backend", "php", "laravel", "worker"]
+    restart_policy: "always"
+
+  - name: "db"
+    namespace: "infra"
+    runtime: "go"
+    entrypoint: "./db-proxy"
+    tags: ["infra", "database"]
+    priority: 5
+    healthcheck:
+      type: tcp
+      tcp_endpoint: "localhost:5432"
+      interval: "10s"
+      timeout: "3s"
+      retries: 5
+      grace_period: "15s"
+
+  - name: "shared-api"
+    extends: "api"
+    runtime: "go"
+    entrypoint: "./cmd/shared-api"
+    args: ["--port", "9090"]
+    tags: ["backend", "shared"]
+    env:
+      PORT: "9090"
+      MODE: "shared"
+
+cron:
+  - name: "cleanup"
+    schedule: "0 2 * * *"
+    command: "scripts/cleanup.sh"
+    enabled: true
+
+web:
+  enabled: false
+  listen: "localhost:9615"
+
+mcp:
+  enabled: false
+  transport: "stdio"
